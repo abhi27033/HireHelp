@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-def recruitment_app(request):
-    return HttpResponse("Hello world!")
+def abc(request):
+    return render(request,'index.html')
+    # return HttpResponse("Hello world!")
+def rec(request):
+    return HttpResponse("Welcome Recruiter")
