@@ -7,3 +7,5 @@ def candidate(request):
     return render(request,'candidate.html')
 def interviewer(request):
     return render(request,'interviewer.html')
+def register(request):
+    return render(request,'register.html')
