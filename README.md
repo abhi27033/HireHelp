@@ -31,7 +31,7 @@ DATABASES = {<br>
 }<br>
 
 Now Run commands:<br>
-
+------------------------------------------------------------------------------------------------------
 py manage.py makemigrations<br>
 py manage.py migrate<br>
 py manage.py runserver<br>
