@@ -5,10 +5,7 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.contrib.auth import logout
 def index(request):
-<<<<<<< HEAD
-=======
     # Clear the session data
->>>>>>> e4d4b29cd507a438e85104fe5b8df2a3767c6237
     request.session.flush()
     return render(request, 'index.html')
 
@@ -64,11 +61,7 @@ def register(request):
                     "INSERT INTO user (firstname, lastname, mobile, email, userrole, password_hash) VALUES (%s, %s, %s, %s, %s, %s)",
                     [firstname, lastname, mobile, email, userrole, hashed_password.decode('utf-8')]
                 )
-<<<<<<< HEAD
-            return redirect('/') #check for successful registration
-=======
             return redirect('/')
->>>>>>> e4d4b29cd507a438e85104fe5b8df2a3767c6237
         except Exception as e:
             return render(request, 'index.html',  {'error': str(e)}) 
     return redirect('/')        
@@ -76,27 +69,14 @@ def register(request):
 
 def candidate(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'candidate':
-<<<<<<< HEAD
-        return redirect('/')  # Redirect if not logged in or not a candidate
-=======
         return redirect('/')
->>>>>>> e4d4b29cd507a438e85104fe5b8df2a3767c6237
     return render(request, 'candidate.html')
 
 def interviewer(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
-<<<<<<< HEAD
-        return redirect('/')  # Redirect if not logged in or not an interviewer
-    return render(request, 'interviewer.html')
-
-def logout_view(request):
-    request.session.flush()
-    return redirect('/')
-=======
         return redirect('/')
     return render(request, 'interviewer.html')
 
 def logout_view(request):
     request.session.flush()  # Clear the session data
     return redirect('/')  # Redirect to homepage after logout
->>>>>>> e4d4b29cd507a438e85104fe5b8df2a3767c6237
