@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 
 def index(request):
+    # Clear the session data
+    request.session.flush()
     return render(request, 'index.html')
 
 def login_view(request):
@@ -14,19 +16,15 @@ def login_view(request):
         
         try:
             with connection.cursor() as cursor:
-                # Write your SQL query to retrieve user data by email
                 cursor.execute("SELECT sid, password_hash, userrole FROM user WHERE email = %s", [email])
                 user = cursor.fetchone()
 
                 if user:
                     sid, stored_password_hash, userrole = user
-                    # Check if the hashed password matches
                     if bcrypt.checkpw(password.encode('utf-8'), stored_password_hash.encode('utf-8')):
-                        # Password is correct, create a session manually
                         request.session['user_id'] = sid
                         request.session['user_role'] = userrole
 
-                        # Redirect based on user role
                         if userrole == 'interviewer':
                             return redirect('interviewer')
                         else:
@@ -48,26 +46,37 @@ def register(request):
         password = request.POST['password']
         userrole = request.POST['userrole']  
 
-        # Hash the password
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         try:
             with connection.cursor() as cursor:
+                # Check if email or mobile already exists
+                cursor.execute("SELECT COUNT(*) FROM user WHERE email = %s OR mobile = %s", [email, mobile])
+                exists = cursor.fetchone()[0]
+
+                if exists:
+                    # If the user already exists, return an error message
+                    return render(request, 'index.html', {'error': "Email or Mobile number already exists."})
                 cursor.execute(
                     "INSERT INTO user (firstname, lastname, mobile, email, userrole, password_hash) VALUES (%s, %s, %s, %s, %s, %s)",
                     [firstname, lastname, mobile, email, userrole, hashed_password.decode('utf-8')]
                 )
-            return redirect('') #check for successful registration
+            return redirect('/')
         except Exception as e:
-            return render(request, 'index.html',  {'error': str(e)}) # write redundant query
+            return render(request, 'index.html',  {'error': str(e)}) 
+    return redirect('/')        
     return render(request, 'index.html') 
 
 def candidate(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'candidate':
-        return redirect('')  # Redirect if not logged in or not a candidate
+        return redirect('/')
     return render(request, 'candidate.html')
 
 def interviewer(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
-        return redirect('')  # Redirect if not logged in or not an interviewer
+        return redirect('/')
     return render(request, 'interviewer.html')
+
+def logout_view(request):
+    request.session.flush()  # Clear the session data
+    return redirect('/')  # Redirect to homepage after logout
