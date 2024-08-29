@@ -3,133 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Registration Form</title>
+    <title>Candidate Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-    />
-    <link rel="stylesheet" href="../static/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif;
+        }
+        .btn-custom {
+            background-color: #FF4B2B;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #e04327;
         }
     </style>
 </head>
-<body>
-    <div class="text-right">
-        <form action= "logout" method="POST">
-            {% csrf_token %}
-            <button type="submit" class="bg-red-500 text-white p-3 rounded-lg font-semibold hover:bg-red-600 transition duration-200">Logout</button>
-        </form>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">
+                Candidate Dashboard
+            </div>
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Scheduled Interviews</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-700">Interview with Company ABC</p>
+                        <p class="text-gray-500">Date: 2023-10-15</p>
+                        <p class="text-gray-500">Time: 10:00 AM</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-700">Interview with Company XYZ</p>
+                        <p class="text-gray-500">Date: 2023-10-20</p>
+                        <p class="text-gray-500">Time: 2:00 PM</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Jobs</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-700">Software Engineer at Company ABC</p>
+                        <p class="text-gray-500">Location: New York, NY</p>
+                        <button class="btn-custom px-4 py-2 rounded-md mt-2">Apply</button>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-md">
+                        <p class="text-gray-700">Frontend Developer at Company XYZ</p>
+                        <p class="text-gray-500">Location: San Francisco, CA</p>
+                        <button class="btn-custom px-4 py-2 rounded-md mt-2">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-9 my-10 rounded-3xl shadow-lg w-full max-w-xl">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Candidate Registration</h2>
-        <form action="#" method="POST" class="space-y-8">
-            <div>
-                <label for="full-name" class="block text-gray-700 font-medium mb-2">Full Name</label>
-                <input type="text" id="full-name" name="full-name" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Enter Your Name" required>
-            </div>
-            <div>
-                <label for="Application-ID" class="block text-gray-700 font-medium mb-2">Application-ID</label>
-                <input type="text" id="Application-ID" name="Application-ID" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Enter Job ID" required>
-            </div>
-            <div>
-                <label for="degree" class="block text-gray-700 font-medium mb-2">Degree</label>
-                <select id="degree" name="degree" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
-                    <option value="">Highest Degree</option>
-                    <option value="bachelors-of-technology">Bachelor of Technology</option>
-                    <option value="masters-of-technology">Master of Technology</option>
-                    <option value="bachelors-of-science">Bachelor of Science</option>
-                    <option value="masters-of-science">Master of Science</option>
-                    <option value="phd">PhD</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div>
-                <label for="qualification" class="block text-gray-700 font-medium mb-2">Qualification</label>
-                <input type="text" id="qualification" name="qualification" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="Mention Specialization" required>
-            </div>
-            <div id="education-section" class="space-y-4">
-            </div>
-            <div>
-                <button type="button" id="add-education" class="bg-grey-100 w-1/2 border-2 border-black flex text-black p-3 rounded-lg font-semibold hover:bg-grey-400 transition duration-200">
-                    <p class="px-5">Add Education</p>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
-                    </svg>                      
-                </button>
-            </div>
-            <div>
-                <label for="resume" class="block text-gray-700 font-medium mb-2">Resume</label>
-                <input type="file" id="resume" name="resume" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" required>
-            </div>
-            <div>
-                <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-200">Submit</button>
-            </div>
-        </form>
-    </div>
-</div>
-<script>
-    // Function to add a new education entry
-    document.getElementById('add-education').addEventListener('click', function() {
-        var newEducationDiv = document.createElement('div');
-        newEducationDiv.className = 'flex space-x-4 items-center';
 
-        // College/University input
-        var collegeInput = document.createElement('input');
-        collegeInput.type = 'text';
-        collegeInput.name = 'college-university[]';
-        collegeInput.className = 'w-2/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500';
-        collegeInput.placeholder = 'Name of College/University';
-        collegeInput.required = true;
-
-        // CGPA
-        var cgpaSelect = document.createElement('select');
-        cgpaSelect.name = 'cgpa[]';
-        cgpaSelect.className = 'w-1/3 p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500';
-        cgpaSelect.required = true;
-
-        // CGPA options
-        var cgpaOptions = ['<option value="" selected disabled>CGPA</option>'];
-        for (var i = 0; i <= 10; i++) {
-            cgpaOptions.push('<option value="' + i + '">' + i + '</option>');
-        }
-        cgpaSelect.innerHTML = cgpaOptions.join('');
-
-        // Remove button
-        var removeButton = document.createElement('div');
-        var removeButton = document.createElement('button');
-        removeButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        `;
-
-        newEducationDiv.appendChild(collegeInput);
-        newEducationDiv.appendChild(cgpaSelect);
-        newEducationDiv.appendChild(removeButton);
-
-        document.getElementById('education-section').appendChild(newEducationDiv);
-        
-        removeButton.addEventListener('click', function() {
-            newEducationDiv.remove();
-        });
-    });
-
-
-    document.querySelectorAll('.remove-education').forEach(button => {
-        button.addEventListener('click', function() {
-            button.parentElement.remove();
-        });
-    });
-</script>
 </body>
 </html>
