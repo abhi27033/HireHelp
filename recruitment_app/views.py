@@ -3,7 +3,7 @@ from django.db import connection
 import bcrypt
 from django.contrib import messages
 from django.contrib.sessions.models import Session
-
+from django.contrib.auth import logout
 def index(request):
     # Clear the session data
     request.session.flush()
