@@ -14,3 +14,4 @@ urlpatterns = [
     path('interviewerinfo',views.interviewer_info,name='interviewer_info'),
     path('update_info',views.update_info,name='UpdateInfo')
 ]
+

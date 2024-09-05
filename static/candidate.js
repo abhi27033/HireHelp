@@ -14,4 +14,8 @@ function applyJob(buttonElement) {
     formDiv=childDivs[1];
     infoDiv.classList.add('hidden');
     formDiv.classList.remove('hidden');
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

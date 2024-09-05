@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import logout
-import requests, os,fitz
+import requests, fitz, os, json
 
 
 def index(request):
@@ -146,7 +146,7 @@ def apply(request):
         resume_text = extract_text_from_pdf(pdf_path).lower()
         payload = {
             "text": resume_text,
-            "confidenceThreshold": 0.8
+            "confidenceThreshold": 0.6
         }
 
         response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
@@ -160,6 +160,22 @@ def apply(request):
     return redirect('candidate')
 
 def addJob(request):
+    job_ID = request.POST['job_ID']
+    job_title = request.POST['job_title']
+    location = request.POST['location']
+    descr = request.POST['desc']
+    requirements = request.POST.getlist('requirement')
+    requirements_json = json.dumps(requirements)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM jobs WHERE job_ID=%s", ['job_ID'])
+            exists = cursor.fetchone()[0]
+            if exists:
+                return render(request,'interviewer.html',{'error':"This Job ID already exists"})
+            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s)", [job_ID, job_title, location, descr, requirements_json])
+            cursor.close()
+    except Exception as e:
+            return render(request, 'interviewer.html',  {'error': str(e)}) 
     return redirect('interviewer')
 def interviewer_info(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
@@ -219,3 +235,5 @@ def update_info(request):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
         return redirect('interviewer')
+
+
