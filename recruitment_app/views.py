@@ -146,7 +146,7 @@ def apply(request):
         resume_text = extract_text_from_pdf(pdf_path).lower()
         payload = {
             "text": resume_text,
-            "confidenceThreshold": 0.6
+            "confidenceThreshold": 0.8
         }
 
         response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
