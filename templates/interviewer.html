@@ -27,12 +27,19 @@
             <div class="text-2xl font-bold text-gray-800">
                 Interviewer Dashboard
             </div>
-            <form action="{% url 'logout' %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="btn-custom px-4 py-2 rounded-md">Logout</button>
-            </form>
+            <div class="flex space-x-4">
+                <form action='interviewerinfo' method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-custom px-4 py-2 rounded-md">Add/Update Info</button>
+                </form>
+                <form action="{% url 'logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-custom px-4 py-2 rounded-md">Logout</button>
+                </form>
+            </div>
         </div>
     </nav>
+
 
     <div class="container mx-auto px-6 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -63,29 +70,29 @@
             </div>
             <div class="bg-white shadow-lg rounded-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Job</h2>
-                <form class="space-y-4">
-                    <div>
-                        <label class="block text-gray-700">Job Title</label>
-                        <input type="text" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Title">
+                <form class="space-y-4" action="addJob" method="POST">
+                    {%csrf_token%}
+                    <div class="flex mb-2">
+                        <div class="w-1/2 pr-2">
+                            <label class="block text-gray-700">Job ID</label>
+                            <input type="text" name="job_ID" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Id">
+                        </div>
+                        <div class="w-1/2 pr-2">
+                            <label class="block text-gray-700">Job Title</label>
+                            <input type="text" name="job_title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Title">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-gray-700">Location</label>
-                        <input type="text" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Location">
+                        <input type="text" name="location" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Location">
                     </div>
                     <div>
                       <label class="block text-gray-700">Job Description</label>
-                      <textarea class="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Job Description" id="jobDescription"></textarea>
+                      <textarea name="desc" class="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Job Description" id="jobDescription"></textarea>
                   </div>
-                    <div>
-                        <label class="block text-gray-700">Status</label>
-                        <select class="w-full p-2 border border-gray-300 rounded-md">
-                            <option>Open</option>
-                            <option>Closed</option>
-                        </select>
-                    </div>
                     <div id="requirementsContainer" class="space-y-4">
                         <div class="requirement-item flex items-center space-x-2">
-                            <input type="text" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
+                            <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
                             <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
                         </div>
                     </div>
@@ -134,7 +141,7 @@
             const newRequirement = document.createElement('div');
             newRequirement.classList.add('requirement-item', 'flex', 'items-center', 'space-x-2');
             newRequirement.innerHTML = `
-                <input type="text" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
+                <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
                 <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
             `;
             container.appendChild(newRequirement);

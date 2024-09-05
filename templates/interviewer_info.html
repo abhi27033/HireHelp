@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interviewer Info</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        function addEducation() {
+            const educationContainer = document.getElementById('education-container');
+            const newEducation = document.createElement('div');
+            newEducation.classList.add('mb-4', 'education-entry');
+
+            newEducation.innerHTML = `
+                <div class="mb-4">
+                    <label for="qualification" class="block text-gray-700 font-bold mb-2">Qualification Level:</label>
+                    <input type="text" name="qualification[]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your qualification"/>
+                </div>
+                <div class="mb-4">
+                    <label for="degree" class="block text-gray-700 font-bold mb-2">Degree:</label>
+                    <input type="text" name="degree[]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your degree"/>
+                </div>
+                <div class="mb-4">
+                    <label for="specialization" class="block text-gray-700 font-bold mb-2">Specialization:</label>
+                    <input type="text" name="specialization[]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your specialization" />
+                </div>
+                <button type="button" class="btn-custom bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" onclick="removeEducation(this)">Remove Education</button>
+            `;
+            educationContainer.appendChild(newEducation);
+        }
+
+        function removeEducation(button) {
+            const educationEntry = button.parentNode;
+            educationEntry.remove();
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        .btn-custom {
+            background-color: #FF4B2B;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #e04327;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-roboto">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Update Interviewer Information</h1>
+
+        <!-- Form container with increased width -->
+        <form action="update_info" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-lg mx-auto">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="firstname" class="block text-gray-700 font-bold mb-2">First Name:</label>
+                <input type="text" value="{{ interviewer.firstname }}" name="firstname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+            </div>
+            <div class="mb-4">
+                <label for="lastname" class="block text-gray-700 font-bold mb-2">Last Name:</label>
+                <input type="text" value="{{ interviewer.lastname }}" name="lastname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+            </div>
+            <div class="mb-4">
+                <label for="phone" class="block text-gray-700 font-bold mb-2">Phone Number:</label>
+                <input type="tel" value="{{interviewer.mobile}}" name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your phone number" readonly/>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-bold mb-2">Email:</label>
+                <input type="email" value="{{interviewer.email}}" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your email" readonly/>
+            </div>
+            
+            <!-- Radio Button for Active/Busy status -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Status:</label>
+                <div class="flex items-center">
+                    <input type="radio" id="active" name="status" value="active" class="mr-2" checked>
+                    <label for="active" class="mr-4">Active</label>
+                    <input type="radio" id="busy" name="status" value="busy" class="mr-2">
+                    <label for="busy">Busy</label>
+                </div>
+            </div>
+
+            <div id="education-container" class="mb-4">
+                <h2 class="text-xl font-bold mb-4">Education</h2>
+            </div>
+            <div class="mb-4">
+                <button type="button" class="btn-custom bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md" onclick="addEducation()">Add Education</button>
+            </div>
+            <div class="mb-4">
+                <label for="resume" class="block text-gray-700 font-bold mb-2">Upload Resume:</label>
+                <input type="file" id="resume" name="resume" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+            </div>
+            <div class="flex items-center justify-between">
+                <button type="submit" class="btn-custom text-white font-bold py-2 px-4 rounded-md">Save Info</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
