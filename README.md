@@ -15,9 +15,11 @@ CREATE TABLE user (<br>
     userrole ENUM('interviewer', 'candidate') NOT NULL DEFAULT 'candidate',<br>
     password_hash CHAR(60) NOT NULL<br>
 );<br>
+```
 
 ## This creates the database and now update the settings.py <br>
 
+```python
 DATABASES = {<br>
     'default': {<br>
         'ENGINE': 'django.db.backends.mysql',<br>
@@ -28,9 +30,12 @@ DATABASES = {<br>
         'PORT': '3306',<br>
     }<br>
 }<br>
+```
 
 ## Now Run commands:
 
+```python
 py manage.py makemigrations<br>
 py manage.py migrate<br>
 py manage.py runserver<br>
+```
