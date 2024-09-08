@@ -3,7 +3,7 @@
 ## Run the below SQL commands in MySQL Workbench <br>
 
 
-```python
+```sql
 create database hireauth;<br>
 use hireauth;<br>
 CREATE TABLE user (<br>
