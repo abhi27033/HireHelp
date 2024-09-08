@@ -1,7 +1,6 @@
 # Steps to connect the authentication Database <br>
-Run the below SQL commands in MySQL Workbench <br>
 
-------------------------------------------------------------------------------------------------------
+## Run the below SQL commands in MySQL Workbench <br>
 
 create database hireauth;<br>
 use hireauth;<br>
@@ -14,8 +13,6 @@ CREATE TABLE user (<br>
     userrole ENUM('interviewer', 'candidate') NOT NULL DEFAULT 'candidate',<br>
     password_hash CHAR(60) NOT NULL<br>
 );<br>
-
-------------------------------------------------------------------------------------------------------
 
 ## This creates the database and now update the settings.py <br>
 
