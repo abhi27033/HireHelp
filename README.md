@@ -1,4 +1,4 @@
-Steps to connect the authentication Database <br>
+# Steps to connect the authentication Database <br>
 Run the below SQL commands in MySQL Workbench <br>
 
 ------------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ CREATE TABLE user (<br>
 
 ------------------------------------------------------------------------------------------------------
 
-This creates the database and now update the settings.py <br>
+## This creates the database and now update the settings.py <br>
 
 DATABASES = {<br>
     'default': {<br>
@@ -30,7 +30,7 @@ DATABASES = {<br>
     }<br>
 }<br>
 
-Now Run commands:<br>
+## Now Run commands:<br>
 ------------------------------------------------------------------------------------------------------
 py manage.py makemigrations<br>
 py manage.py migrate<br>
