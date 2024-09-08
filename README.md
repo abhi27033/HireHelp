@@ -2,6 +2,8 @@
 
 ## Run the below SQL commands in MySQL Workbench <br>
 
+
+```python
 create database hireauth;<br>
 use hireauth;<br>
 CREATE TABLE user (<br>
@@ -27,8 +29,8 @@ DATABASES = {<br>
     }<br>
 }<br>
 
-## Now Run commands:<br>
-------------------------------------------------------------------------------------------------------
+## Now Run commands:
+
 py manage.py makemigrations<br>
 py manage.py migrate<br>
 py manage.py runserver<br>
