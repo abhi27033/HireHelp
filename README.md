@@ -25,7 +25,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'hireauth',
         'USER': 'root',                             # <--------------------- Add the user<br>
-        'PASSWORD': 'password',                     #<--------------------- Add the password<br>
+        'PASSWORD': 'password',                     # <--------------------- Add the password<br>
         'HOST': 'localhost',
         'PORT': '3306',
     }
