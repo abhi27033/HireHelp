@@ -1,11 +1,11 @@
-# Steps to connect the authentication Database <br>
+# Steps to connect the authentication and other relevant tables in Database<br>
 
 ## Run the below SQL commands in MySQL Workbench <br>
 
 
 ```sql
-create database hireauth;
-use hireauth;
+CREATE DATABASE hireauth;
+USE hireauth;
 CREATE TABLE user (
     sid INT PRIMARY KEY AUTO_INCREMENT,
     firstname VARCHAR(40) NOT NULL,
@@ -15,6 +15,11 @@ CREATE TABLE user (
     userrole ENUM('interviewer', 'candidate') NOT NULL DEFAULT 'candidate',
     password_hash CHAR(60) NOT NULL
 );
+CREATE TABLE jobs(job_ID INT PRIMARY KEY,
+job_title VARCHAR(100),
+location VARCHAR(100),
+descr TEXT,
+requirements TEXT);
 ```
 
 ## This creates the database and now update the settings.py <br>
