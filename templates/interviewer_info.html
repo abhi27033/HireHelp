@@ -72,24 +72,68 @@
                 <label for="email" class="block text-gray-700 font-bold mb-2">Email:</label>
                 <input type="email" value="{{interviewer.email}}" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your email" readonly/>
             </div>
-            
-            <!-- Radio Button for Active/Busy status -->
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Status:</label>
-                <div class="flex items-center">
-                    <input type="radio" id="active" name="status" value="active" class="mr-2" checked>
-                    <label for="active" class="mr-4">Active</label>
-                    <input type="radio" id="busy" name="status" value="busy" class="mr-2">
-                    <label for="busy">Busy</label>
-                </div>
+                <label for="experience_years" class="block text-gray-700 font-bold mb-2">Experience Years:</label>
+                <input type="number" value="{{ interviewer.experience_years }}" name="experience_years" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
             </div>
 
+            <!-- Education Section -->
             <div id="education-container" class="mb-4">
                 <h2 class="text-xl font-bold mb-4">Education</h2>
             </div>
             <div class="mb-4">
                 <button type="button" class="btn-custom bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md" onclick="addEducation()">Add Education</button>
             </div>
+            
+            <!-- Availability Section -->
+            <div class="mb-4">
+                <h2 class="text-xl font-bold mb-4">Availability</h2>
+                <div class="grid grid-cols-7 gap-4">
+                    <div class="col-span-1">
+                        <input type="checkbox" id="mon" name="availability[mon][enabled]" class="mr-2">
+                        <label for="mon">Mon</label>
+                        <input type="time" id="mon_start" name="availability[mon][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="mon_end" name="availability[mon][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="tue" name="availability[tue][enabled]" class="mr-2">
+                        <label for="tue">Tue</label>
+                        <input type="time" id="tue_start" name="availability[tue][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="tue_end" name="availability[tue][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="wed" name="availability[wed][enabled]" class="mr-2">
+                        <label for="wed">Wed</label>
+                        <input type="time" id="wed_start" name="availability[wed][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="wed_end" name="availability[wed][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="thu" name="availability[thu][enabled]" class="mr-2">
+                        <label for="thu">Thu</label>
+                        <input type="time" id="thu_start" name="availability[thu][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="thu_end" name="availability[thu][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="fri" name="availability[fri][enabled]" class="mr-2">
+                        <label for="fri">Fri</label>
+                        <input type="time" id="fri_start" name="availability[fri][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="fri_end" name="availability[fri][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="sat" name="availability[sat][enabled]" class="mr-2">
+                        <label for="sat">Sat</label>
+                        <input type="time" id="sat_start" name="availability[sat][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="sat_end" name="availability[sat][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="col-span-1">
+                        <input type="checkbox" id="sun" name="availability[sun][enabled]" class="mr-2">
+                        <label for="sun">Sun</label>
+                        <input type="time" id="sun_start" name="availability[sun][start]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="time" id="sun_end" name="availability[sun][end]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                </div>
+            </div>
+            
             <div class="mb-4">
                 <label for="resume" class="block text-gray-700 font-bold mb-2">Upload Resume:</label>
                 <input type="file" id="resume" name="resume" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>

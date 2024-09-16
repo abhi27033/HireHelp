@@ -190,18 +190,22 @@ def interviewer_info(request):
     return render(request,'interviewer_info.html',{'interviewer':interviewer})
 
 def update_info(request):
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        if request.method=='POST':
-            resume = request.FILES['resume']
+    if request.method == 'POST':
+        firstname = request.POST['firstname']
+        lastname = request.POST['lastname']
+        mobile = request.POST['phone']
+        email = request.POST['email']
+        experience_years = request.POST['experience_years']
+        resume = request.FILES['resume']
 
+        # Process resume to extract skills
         fs = FileSystemStorage(location='/tmp')  # Store in temp directory
         filename = fs.save(resume.name, resume)
         pdf_path = fs.path(filename)
-        
-        print(pdf_path)
 
-        #process
-        querystring = {"language":"en"}
+        # API call to extract skills
+        url = "https://emsiservices.com/skills/versions/latest/extract"
+        querystring = {"language": "en"}
         auth_url = "https://auth.emsicloud.com/connect/token"
         payload = {
             "client_id": "39emm9hnhgnzvhfd",
@@ -211,12 +215,12 @@ def update_info(request):
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = requests.post(auth_url, data=payload, headers=headers)
-        access_token=''
+        access_token = ''
 
         if response.status_code == 200:
             response_data = response.json()
             access_token = response_data.get('access_token')
-        
+
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
@@ -228,14 +232,49 @@ def update_info(request):
             "confidenceThreshold": 0.8
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
-        skills = response.json().get('data',[])
-        for skill in skills:
-            print(skill['skill']['name'])
-        
+        response = requests.post(url, json=payload, headers=headers, params=querystring)
+        skills = response.json().get('data', [])
+        skills_list = [skill['skill']['name'] for skill in skills]
+        skills_json = json.dumps(skills_list, indent=4)
+
+        # Parse education and availability
+        education = request.POST.getlist('qualification[]')
+        degrees = request.POST.getlist('degree[]')
+        specializations = request.POST.getlist('specialization[]')
+        education_list = [
+            {
+                "qualification": q,
+                "degree": d,
+                "specialization": s
+            }
+            for q, d, s in zip(education, degrees, specializations)
+        ]
+        education_json = json.dumps(education_list, indent=4)
+
+        availability = {}
+        for day in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']:
+            if request.POST.get(f'availability[{day}][enabled]'):
+                availability[day] = {
+                    "start": request.POST.get(f'availability[{day}][start]'),
+                    "end": request.POST.get(f'availability[{day}][end]')
+                }
+        availability_json = json.dumps(availability, indent=4)
+
+        # Update database
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute("""
+                    INSERT INTO interviewers (firstname, lastname, mobile, email, experience_years, skills, education, availability)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, [firstname, lastname, mobile, email, experience_years, skills_json, education_json, availability_json])
+                print("Record inserted successfully")
+            except IntegrityError as e:
+                print(f"IntegrityError: {e}")
+                # Handle specific errors such as duplicate email or phone number
+                if 'Duplicate entry' in str(e):
+                    return render(request, 'update_info.html', {'error': 'A record with this mobile number or email already exists.'})
+
         if os.path.exists(pdf_path):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
-        return redirect('interviewer')
-
-
+    return redirect('interviewer')
