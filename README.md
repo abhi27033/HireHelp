@@ -35,6 +35,16 @@ CREATE TABLE interviewers (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE candidates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    firstname VARCHAR(50) NOT NULL,
+    lastname VARCHAR(50) NOT NULL,
+    mobile VARCHAR(20) UNIQUE, -- Ensure mobile numbers are unique
+    email VARCHAR(100) UNIQUE, -- Ensure email addresses are unique
+    experience_years INT NOT NULL, -- Store experience in years
+    skills JSON, -- JSON column for storing skills
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp of creation
+);
 ```
 
 ## This creates the database and now update the settings.py <br>

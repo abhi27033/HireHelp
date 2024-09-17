@@ -106,23 +106,25 @@ def extract_text_from_pdf(pdf_path):
 
 def apply(request):
     url = "https://emsiservices.com/skills/versions/latest/extract"
-    if request.method=='POST':
-        #extract
+    
+    if request.method == 'POST':
+        # Extract data from form
         firstname = request.POST['firstname']
         lastname = request.POST['lastname']
         mobile = request.POST['mobile']
         email = request.POST['email']
+        experience_years = int(request.POST['experience_years'])  # Convert to integer
         resume = request.FILES['resume']
 
-
+        # Save resume temporarily
         fs = FileSystemStorage(location='/tmp')  # Store in temp directory
         filename = fs.save(resume.name, resume)
         pdf_path = fs.path(filename)
         
-        print(pdf_path)
+        print(f"Saved PDF path: {pdf_path}")
 
-        #process
-        querystring = {"language":"en"}
+        # Process for extracting skills from resume
+        querystring = {"language": "en"}
         auth_url = "https://auth.emsicloud.com/connect/token"
         payload = {
             "client_id": "39emm9hnhgnzvhfd",
@@ -130,10 +132,9 @@ def apply(request):
             "grant_type": "client_credentials",
             "scope": "emsi_open"
         }
-
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = requests.post(auth_url, data=payload, headers=headers)
-        access_token=''
+        access_token = ''
 
         if response.status_code == 200:
             response_data = response.json()
@@ -144,6 +145,7 @@ def apply(request):
             "Content-Type": "application/json"
         }
 
+        # Extract text from resume and get skills
         resume_text = extract_text_from_pdf(pdf_path).lower()
         payload = {
             "text": resume_text,
@@ -151,13 +153,29 @@ def apply(request):
         }
 
         response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
-        skills = response.json().get('data',[])
-        for skill in skills:
-            print(skill['skill']['name'])
-        
+        skills = response.json().get('data', [])
+        extracted_skills = [skill['skill']['name'] for skill in skills]
+        skills_json = json.dumps(extracted_skills)
+
+        # Clean up the temporary file
         if os.path.exists(pdf_path):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
+
+        # Insert data into the database
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO candidates (firstname, lastname, mobile, email, experience_years, skills, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, NOW());
+                    """,
+                    [firstname, lastname, mobile, email, experience_years, skills_json]
+                )
+                print(f"Inserted candidate: {firstname} {lastname}")
+            except Exception as e:
+                print(f"Error inserting into database: {e}")
+
     return redirect('candidate')
 
 def addJob(request):

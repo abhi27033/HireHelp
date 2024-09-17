@@ -99,31 +99,37 @@
                         <form action="apply" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <p class="text-gray-700"><b>Personal Information:</b></p>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
-                                        <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                        <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
-                                    </div>
+                            <div class="flex mb-2">
+                                <div class="w-1/2 pr-2">
+                                    <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+                                    <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
                                 </div>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
-                                        <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" required />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                        <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" required />
-                                    </div>
+                                <div class="w-1/2 pl-2">
+                                    <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+                                    <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
                                 </div>
-                                <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
-                                <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
-                                <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2" onclick="applyJob(this)">Submit Application</button>
-                        </form> 
-                </div>                    
+                            </div>
+                            <div class="flex mb-2">
+                                <div class="w-1/2 pr-2">
+                                    <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
+                                    <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" required />
+                                </div>
+                                <div class="w-1/2 pl-2">
+                                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" required />
+                                </div>
+                            </div>
+                            <div class="flex mb-2">
+                                <div class="w-1/2 pr-2">
+                                    <label for="experience_years" class="block text-sm font-medium text-gray-700">Experience Years</label>
+                                    <input type="number" name="experience_years" value="{{ candidate.experience_years }}" placeholder="Experience Years" class="p-2 border rounded w-full" required />
+                                </div>
+                            </div>
+                            <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
+                            <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
+                            <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2" onclick="applyJob(this)">Submit Application</button>
+                        </form>
+                    </div>   
                 </div>
             </div>
         </div>
