@@ -277,9 +277,13 @@ def update_info(request):
         return redirect('interviewer')
     
 def scheduled_interview(request):
-    if(request.session.get('user_role')=='interviewer'):
+    if not request.session.get('user_id'):
+        return redirect('/')
+    elif(request.session.get('user_role')=='interviewer'):
         return render(request,'interviewer_scheduled_interview.html')
     else:
         return render(request,'candidate_scheduled_interview.html')
 def add_job(request):
+    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
+        return redirect('/')
     return render(request,'Add_Jobs.html')
