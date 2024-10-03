@@ -124,7 +124,7 @@ def interviewer(request):
             }
             # print(jobs_dict['Job_Requirements'])
             jobs_f.append(jobs_dict)
-            print(jobs_f)
+            # print(jobs_f)
     except:
         jobs_f=[]
     return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
@@ -276,4 +276,10 @@ def update_info(request):
             print(f"Temporary file {pdf_path} deleted.")
         return redirect('interviewer')
     
-
+def scheduled_interview(request):
+    if(request.session.get('user_role')=='interviewer'):
+        return render(request,'interviewer_scheduled_interview.html')
+    else:
+        return render(request,'candidate_scheduled_interview.html')
+def add_job(request):
+    return render(request,'Add_Jobs.html')
