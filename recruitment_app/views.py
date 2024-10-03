@@ -83,12 +83,51 @@ def candidate(request):
         'mobile': request.session.get('mobile'),
         'email': request.session.get('email'),
     }
-    return render(request, 'candidate.html', {'candidate': candidate})
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM jobs")
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            jobs_dict = {
+                'Job_ID': job[0],
+                'Job_Title': job[1],
+                'Job_Location': job[2],
+                'Job_Description': job[3],
+                'Job_Requirements': job[4][1:][:-1].split(',')
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+    except:
+        jobs_f=[]
+    return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':jobs_f})
 
 def interviewer(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
         return redirect('/')
-    return render(request, 'interviewer.html')
+    user_id = request.session.get('user_id')
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM jobs where Added_By= %s",[user_id])
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            jobs_dict = {
+                'Job_ID': job[0],
+                'Job_Title': job[1],
+                'Job_Location': job[2],
+                'Job_Description': job[3],
+                'Job_Requirements': job[4][1:][:-1].split(','),
+                'Job_Status': job[6]
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+            print(jobs_f)
+    except:
+        jobs_f=[]
+    return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
 
 def logout_view(request):
     request.session.flush()  # Clear the session data
@@ -166,13 +205,14 @@ def addJob(request):
     descr = request.POST['desc']
     requirements = request.POST.getlist('requirement')
     requirements_json = json.dumps(requirements)
+    Added_By=request.session.get('user_id')
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM jobs WHERE job_ID=%s", ['job_ID'])
             exists = cursor.fetchone()[0]
             if exists:
                 return render(request,'interviewer.html',{'error':"This Job ID already exists"})
-            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s)", [job_ID, job_title, location, descr, requirements_json])
+            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s, %s,True)", [job_ID, job_title, location, descr, requirements_json,Added_By])
             cursor.close()
     except Exception as e:
             return render(request, 'interviewer.html',  {'error': str(e)}) 
@@ -235,5 +275,5 @@ def update_info(request):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
         return redirect('interviewer')
-
+    
 
