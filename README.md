@@ -1,6 +1,9 @@
 # Steps to connect the authentication and other relevant tables in Database<br>
 
 ## Run the below SQL commands in MySQL Workbench <br>
+# Steps to connect the authentication and other relevant tables in Database<br>
+
+## Run the below SQL commands in MySQL Workbench <br>
 
 
 ```sql
