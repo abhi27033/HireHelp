@@ -1,31 +1,121 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
 
-body {
-    display: flex;
-    height: 100vh; /* Full viewport height */
-    margin: 0; /* Remove default margin */
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Oswald:wght@200..700&display=swap');
+.main-content {
+    font-family: "Oswald", sans-serif;
+    margin-top: 80px;
 }
 
-/* Flexbox styles for the main container that holds both sections */
+.nav-container{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    width: 100%; 
+    height: 56px; 
+    background: #FFFFFFFF; /* white */
+    border-radius: 0px; 
+    box-shadow: 0px 0px 1px #171a1f, 0px 0px 2px #171a1f; /* shadow-xs */
+}
+
+.nav-custom a:hover {
+    color:#8a63e8;
+}
+
+.nav-custom a {
+    position: relative;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.nav-custom a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    left: 0;
+    bottom: -5px;
+    background-color: #8a63e8;
+    transition: width 0.5s ease-out;
+}
+
+.nav-custom a:hover::after {
+    width: 100%;
+}
+
+
+/* Header Menu */
+.header-menu {
+    position: absolute; 
+    top: -3px; 
+    left: 514px; 
+    width: 411px; 
+    height: 52px; 
+    display: flex; 
+    align-items: center;
+    font-size: 14px; 
+    line-height: 22px; 
+    font-weight: 400; 
+    opacity: 1; 
+}
+
+.header-menu .header-menu-item {
+    padding: 15px 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: #565E6CFF; /* neutral-600 */
+    border-radius: 6px; /* border-m */
+    cursor: pointer; 
+    white-space: nowrap; 
+  }
+
+/* General layout for larger screens */
 .flex-container {
-    display: flex; /* Make the container a flex container */
-    width: 100%; /* Ensure it spans the full width */
+    display: flex;
+    flex-direction: row; /* Sections side by side */
+    width: 100%;
+    height: 100vh; /* Optional: to take full screen height */
 }
 
+
+@media only screen and (max-width: 1050px) {
+    .container{
+        min-height: 480px !important;
+    }
+    .flex-container {
+        flex-direction: column;
+    }
+}
+@media only screen and (max-width: 700px) {
+    .container{
+        min-height: 380px !important;
+    } 
+}
 /* Left Section Styles */
 .left-section {
-    flex: 1; /* Take up 50% of the width */
-    background-color: #f3f4f6; /* Example background color */
-    padding: 8px;
+    flex: 1;
+    background-color: #f3f4f6; 
+    padding: 16px; /* More padding for better spacing */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    text-align: center; /* Prevents repeating of the image */
+    background-image: url('../static/images/HireHelpAIArt.jpg');
+    background-size: cover; /* Ensures the image covers the entire element */
+    background-position: center; /* Centers the image */
+    min-height: 650px;
+    background-repeat: no-repeat; 
+}
+
+.left-section-content {
+    position: relative;
+    top:40%;
 }
 
 /* Right Section Styles */
-.right-section {
-    flex: 1; /* Take up the remaining 50% of the width */
+.right-section {/* Take up the remaining 50% of the width */
+    flex: 1;
     background-color: #fff; /* Example background color */
     padding: 8px;
     display: flex;
@@ -46,14 +136,37 @@ p {
     margin: 20px 0 30px;
 }
 
-label {
+.inp {
+    position: relative;
     width: 100%;
-    text-align: left;
+    max-width: 280px;
+    height: 53px;
 }
 
-span {
-    font-size: 12px;
+.inp input {
+    width: 100%;
+    border: 0;
+    font-family: inherit;
+    padding: 0;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 500;
+    background: none;
+    border-radius: 0;
+    color: #235cd7;
+    transition: all .15s ease;
 }
+
+.inp input:focus {
+    outline: none;
+}
+.inp select{
+    color: #9098A9;
+}
+.inp input::placeholder {
+    color: #9098A9;
+}
+
 
 a {
     color: #333;
@@ -63,13 +176,14 @@ a {
 }
 
 button {
-    border-radius: 20px;
-    border: 1px solid #FF4B2B;
-    background-color: #FF4B2B;
+    margin:10px 0 10px 0;
+    border-radius: 10px;
+    border: 1px solid white;
+    background-color: #8a63e8;
     color: #FFFFFF;
     font-size: 12px;
     font-weight: bold;
-    padding: 12px 45px;
+    padding: 10px 30px;
     letter-spacing: 1px;
     text-transform: uppercase;
     transition: transform 80ms ease-in;
@@ -91,110 +205,88 @@ button.ghost {
 form {
     background-color: #FFFFFF;
     display: flex;
-    align-items: flex-start; /* Align items to the start */
+    align-items:center; /* Align items to the start */
     justify-content: center;
     flex-direction: column;
     padding: 20px; /* Increased padding for spacing */
     margin: 0; /* Ensure no margin issues */
     width: 100%;
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    max-height: 100%;
 }
 
-input {
-    background-color: #eee;
-    border: 1px solid #ccc; /* Border to make input fields more visible */
-    padding: 12px 15px;
-    margin-bottom: 16px; /* Space between input fields */
-    width: calc(100% - 24px); /* Adjust width considering padding */
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
-}
-
+/* General Container Styles */
 .container {
     background-color: #fff;
     border-radius: 10px;
-    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 
-                0 10px 10px rgba(0,0,0,0.22);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 
+                0 10px 10px rgba(0, 0, 0, 0.22);
     position: relative;
-    overflow: hidden;
-    width: 100%; /* Changed to make it responsive */
     max-width: 768px;
     min-height: 480px;
+     /* Adjusts min height based on screen width */
+    display:block; /* Flexbox layout for aligning children */
+    align-items: center; /*er content vertically */
+    justify-content: center; /* Center content horizontally */
 }
 
+/* Form container */
 .form-container {
     position: absolute;
     top: 0;
     height: 100%;
     width: 100%;
     transition: all 0.6s ease-in-out;
+    display: flex; /* Flex for centering form content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    max-width: 100%;
+    max-height: 100%;
 }
 
+/* Sign In and Sign Up Forms */
 .sign-in-container,
 .sign-up-container {
     position: absolute;
-    top: 0;
+    top: 0; /* Ensure the form starts from the top */
     height: 100%;
-    width: 50%;
+    width: 50%; /* Adjust form width */
     transition: all 0.6s ease-in-out;
     z-index: 1;
-    opacity: 0; /* Ensure forms are hidden by default */
-    overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 10px; /* Add padding to avoid scrollbar overlapping content */
+    opacity: 0;
+    overflow-y: auto; /* Allow scrolling for longer forms */
+    display: flex; /* Flex for centering form elements */
+    flex-direction: column;
+    justify-content: flex-start; /* Start from the top */
+    align-items: center;
 }
 
-.sign-in-container {
+.sign-in-container,.sign-up-container {
     left: 0;
-    z-index: 2; /* Default form, bring to front */
-    opacity: 1; /* Make it visible by default */
+    z-index: 2;
+    opacity: 1;
 }
 
 .container.right-panel-active .sign-in-container {
     transform: translateX(100%);
-    opacity: 0; /* Hide sign-in form when active class is added */
+    opacity: 0;
     z-index: 1;
 }
 
 .sign-up-container {
     left: 0;
-    max-height: 100%; /* Ensure container can scroll */
-    opacity: 0; /* Hidden initially */
+    opacity: 0;
     z-index: 1;
-}
-
-/* Scrollbar styling for better UX */
-.sign-up-container::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
-}
-
-.sign-up-container::-webkit-scrollbar-thumb {
-    background-color: #FF4B2B; /* Color of the scrollbar */
-    border-radius: 10px; /* Rounded corners for the scrollbar */
-}
-
-.sign-up-container::-webkit-scrollbar-track {
-    background: #f3f4f6; /* Background color of the scrollbar track */
+    margin-bottom: 10px;
 }
 
 .container.right-panel-active .sign-up-container {
     transform: translateX(100%);
-    opacity: 1; /* Show the sign-up form */
-    z-index: 5; /* Bring to front */
+    opacity: 1;
+    z-index: 5;
     animation: show 0.6s;
 }
 
-/* Keyframe animation for smooth appearance */
-@keyframes show {
-    0%, 49.99% {
-        opacity: 0;
-        z-index: 1;
-    }
-
-    50%, 100% {
-        opacity: 1;
-        z-index: 5;
-    }
-}
-
+/* Adjustments for better alignment */
 .overlay-container {
     position: absolute;
     top: 0;
@@ -206,14 +298,10 @@ input {
     z-index: 100;
 }
 
-.container.right-panel-active .overlay-container {
-    transform: translateX(-100%);
-}
+
 
 .overlay {
-    background: #FF416C;
-    background: -webkit-linear-gradient(to right, #FF4B2B, #FF416C);
-    background: linear-gradient(to right, #FF4B2B, #FF416C);
+    background: linear-gradient(to right, #8a63e8, #5c57de);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: 0 0;
@@ -229,7 +317,24 @@ input {
 .container.right-panel-active .overlay {
     transform: translateX(50%);
 }
+.container.right-panel-active .overlay-container {
+    transform: translateX(-100%);
+}
 
+.sign-up-container::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.sign-up-container::-webkit-scrollbar-thumb {
+    background-color: #8a63e8; /* Color of the scrollbar */
+    border-radius: 10px; /* Rounded corners for the scrollbar */
+}
+
+.sign-up-container::-webkit-scrollbar-track {
+    background: #f3f4f6; /* Background color of the scrollbar track */
+}
+
+/* Center content within the overlay panels */
 .overlay-panel {
     position: absolute;
     display: flex;
@@ -262,17 +367,27 @@ input {
     transform: translateX(20%);
 }
 
-.social-container {
-    margin: 20px 0;
+/* Keyframe for smooth show animation */
+@keyframes show {
+    0%, 49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+    50%, 100% {
+        opacity: 1;
+        z-index: 5;
+    }
 }
 
-.social-container a {
-    border: 1px solid #DDDDDD;
-    border-radius: 50%;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 5px;
-    height: 40px;
-    width: 40px;
+
+
+.left-section h1 {
+    font-size: 2rem; /* Responsive heading size */
+    margin-bottom: 16px;
+}
+
+.left-section p {
+    font-size: 1rem; /* Responsive paragraph font */
+    color: #4B5563; /* Text color */
+    max-width: 600px; /* Restrict max width for readability */
 }
