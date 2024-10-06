@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Candidate Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        .btn-custom {
+            background-color: #FF4B2B;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #e04327;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">
+                Candidate Dashboard
+            </div>
+            <form method="POST" class="flex space-x-4">
+                {% csrf_token %}
+                <button type="submit" formaction='candidate' class="btn-custom px-4 py-2 rounded-md">Home</button>
+                <button type="submit" formaction='scheduled_interview' class="btn-custom px-4 py-2 rounded-md">Scheduled Interview</button>
+                <button type="submit" formaction="{% url 'logout' %}" class="btn-custom px-4 py-2 rounded-md">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-12">
+        {% block content %}
+        <!-- Default content can go here if needed -->
+        {% endblock %}
+    </div>
+
+    <script src="../static/candidate.js"></script>
+</body>
+</html>

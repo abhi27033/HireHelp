@@ -12,6 +12,8 @@ urlpatterns = [
     path('register',views.register,name='register'),
     path('logout', views.logout_view, name='logout'),
     path('interviewerinfo',views.interviewer_info,name='interviewer_info'),
-    path('update_info',views.update_info,name='UpdateInfo')
+    path('update_info',views.update_info,name='UpdateInfo'),
+    path('scheduled_interview',views.scheduled_interview,name='scheduled_interview'),
+    path('add_job',views.add_job,name='add_job')
 ]
 

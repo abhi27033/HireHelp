@@ -1,162 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interviewer Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-        }
-        .btn-custom {
-            background-color: #FF4B2B;
-            color: white;
-        }
-        .btn-custom:hover {
-            background-color: #e04327;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
+{% extends 'interviewer_base.html' %}
 
-    <nav class="bg-white shadow-md py-4">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <div class="text-2xl font-bold text-gray-800">
-                Interviewer Dashboard
-            </div>
-            <div class="flex space-x-4">
-                <form action='interviewerinfo' method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-custom px-4 py-2 rounded-md">Add/Update Info</button>
-                </form>
-                <form action="{% url 'logout' %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-custom px-4 py-2 rounded-md">Logout</button>
-                </form>
-            </div>
+{% block title %}Interviewer Dashboard {% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Jobs Added</h2>
+    <div class="space-y-4">
+        {% for job in fetched_jobs %}
+        <div class="bg-gray-100 p-4 rounded-md">
+            <p class="text-gray-700"><b>{{ job.Job_Title }}</b></p>
+            <p class="text-gray-500"><b>Job ID:</b> {{ job.Job_ID }}</p>
+            <p class="text-gray-500"><b>Location:</b> {{ job.Job_Location }}</p>
+            <p class="text-gray-500"><b>Job Description:</b> {{ job.Job_Description }}</p>
+            <p class="text-gray-500"><b>Requirements:</b></p>
+            <ul class="list-disc list-inside text-gray-500">
+                {% for req in job.Job_Requirements %}
+                <li>{{ req }}</li>
+                {% endfor %}
+            </ul>
+            {% if job.Job_Status %}
+            <p class="text-gray-500"><b>Status:</b> Open</p>
+            {% else %}
+            <p class="text-gray-500"><b>Status:</b> Closed</p>
+            {% endif %}
+            <button type="button" class="btn-custom px-4 py-2 rounded-md">Edit Job</button>
         </div>
-    </nav>
-
-
-    <div class="container mx-auto px-6 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Scheduled Interviews</h2>
-                <div class="space-y-4">
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>Interview with Candidate Atharva</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> 1332 </p>
-                        <p class="text-gray-500"><b>Applicant ID:</b> 300 </p>
-                        <p class="text-gray-500"><b>Interview Panel :</b> Aryan Tandon, Abhishek Singh </p>
-                        <p class="text-gray-500"><b>Job title:</b> Research Scientist </p>
-                        <p class="text-gray-500"><b>Job Description:</b> The Research Scientist will be responsible for conducting high-quality research and development in the field of defense technologies. This role involves designing and executing experiments, analyzing data, and collaborating with cross-functional teams to develop innovative solutions. The ideal candidate should have a strong background in physics or engineering, excellent analytical skills, and experience in research methodologies.</p>
-                        <p class="text-gray-500"><b>Date:</b> 2024-10-15</p>
-                        <p class="text-gray-500"><b>Time:</b> 10:00 AM</p>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>Interview with Candidate Aryan</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> 2045 </p>
-                        <p class="text-gray-500"><b>Applicant ID:</b> 1022 </p>
-                        <p class="text-gray-500"><b>Interview Panel :</b> Atharva Singh, Abhishek Singh </p>
-                        <p class="text-gray-500"><b>Job title:</b> Data Analyst </p>
-                        <p class="text-gray-500"><b>Job Description:</b> As a Data Analyst at DRDO, you will be analyzing large datasets to identify trends and insights that will drive business decisions. You will be responsible for developing reports, dashboards, and visualizations to communicate findings to stakeholders. The candidate should have proficiency in SQL, Python, and data visualization tools like Tableau or Power BI. Strong problem-solving skills and attention to detail are essential for this role.</p>
-                        <p class="text-gray-500"><b>Date:</b> 2024-12-20</p>
-                        <p class="text-gray-500"><b>Time:</b> 2:00 PM</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Job</h2>
-                <form class="space-y-4" action="addJob" method="POST">
-                    {%csrf_token%}
-                    <div class="flex mb-2">
-                        <div class="w-1/2 pr-2">
-                            <label class="block text-gray-700">Job ID</label>
-                            <input type="text" name="job_ID" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Id">
-                        </div>
-                        <div class="w-1/2 pr-2">
-                            <label class="block text-gray-700">Job Title</label>
-                            <input type="text" name="job_title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Title">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700">Location</label>
-                        <input type="text" name="location" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Location">
-                    </div>
-                    <div>
-                      <label class="block text-gray-700">Job Description</label>
-                      <textarea name="desc" class="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Job Description" id="jobDescription"></textarea>
-                  </div>
-                    <div id="requirementsContainer" class="space-y-4">
-                        <div class="requirement-item flex items-center space-x-2">
-                            <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
-                            <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-custom px-4 py-2 rounded-md" id="addRequirementBtn">Add Requirement</button>
-                    <button type="submit" class="btn-custom px-4 py-2 rounded-md">Add Job</button>
-                </form>
-                <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Jobs Added</h2>
-                <div class="space-y-4">
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>Software Engineer at DRDO</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> 1500</p>
-                        <p class="text-gray-500"><b>Location:</b> New Delhi, India</p>
-                        <p class="text-gray-500"><b>Job Description:</b> DRDO is seeking a passionate Software Engineer to join our innovative development team. In this role, you will design, develop, and maintain scalable software solutions. You will collaborate with cross-functional teams to define, design, and ship new features. The ideal candidate has a strong understanding of algorithms, data structures, and object-oriented programming, and is proficient in languages such as Java, Python, or C++. Experience with cloud technologies and Agile methodologies is a plus.</p>
-                        <p class="text-gray-500"><b>Requirements: </b></p>
-                        <ul class="list-disc list-inside text-gray-500">
-                            <li>Bachelor's degree in Computer Science or a related field</li>
-                            <li>2+ years of experience in software development</li>
-                            <li>Strong problem-solving skills and attention to detail</li>
-                        </ul>
-                        <p class="text-gray-500"><b>Status:</b> Open</p>
-                        <button type="button" class="btn-custom px-4 py-2 rounded-md" >Edit Job</button>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>Data Scientist at DRDO</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> 2344</p>
-                        <p class="text-gray-500"><b>Location:</b> New Delhi , India</p>
-                        <p class="text-gray-500"><b>Job Description:</b> DRDO is hiring a Data Scientist to join our analytics team. In this role, you will work on large datasets to develop predictive models and generate insights that drive business decisions. You should have a strong background in statistics, machine learning, and data visualization tools such as Python, R, and Tableau. The ideal candidate is analytical, detail-oriented, and has experience working with big data technologies like Hadoop or Spark.</p>
-                        <p class="text-gray-500"><b>Requirements: </b>
-                          <ul class="list-disc list-inside text-gray-500"> 
-                            <li>Master's degree in Data Science, Statistics, or a related field</li>
-                            <li>3+ years of experience in data science or a related role</li>
-                            <li>Strong proficiency in Python, R, and SQL</li>
-                            </ul>
-                        </p>
-                        <p class="text-gray-500"><b>Status:</b> Open</p>
-                        <button type="button" class="btn-custom px-4 py-2 rounded-md" >Edit Job</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
-    
-    <script>
-        document.getElementById('addRequirementBtn').addEventListener('click', function() {
-            const container = document.getElementById('requirementsContainer');
-            const newRequirement = document.createElement('div');
-            newRequirement.classList.add('requirement-item', 'flex', 'items-center', 'space-x-2');
-            newRequirement.innerHTML = `
-                <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
-                <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
-            `;
-            container.appendChild(newRequirement);
-            addDeleteEvent(newRequirement.querySelector('.deleteRequirementBtn'));
-        });
-
-        function addDeleteEvent(button) {
-            button.addEventListener('click', function() {
-                button.parentElement.remove();
-            });
-        }
-
-        document.querySelectorAll('.deleteRequirementBtn').forEach(function(button) {
-            addDeleteEvent(button);
-        });
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -17,7 +17,6 @@ def login_view(request):
     if request.method == "POST":
         email = request.POST['email']
         password = request.POST['password']
-        
         try:
             with connection.cursor() as cursor:
                 # Reading more data so as to maintain in session
@@ -84,12 +83,51 @@ def candidate(request):
         'mobile': request.session.get('mobile'),
         'email': request.session.get('email'),
     }
-    return render(request, 'candidate.html', {'candidate': candidate})
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM jobs")
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            jobs_dict = {
+                'Job_ID': job[0],
+                'Job_Title': job[1],
+                'Job_Location': job[2],
+                'Job_Description': job[3],
+                'Job_Requirements': job[4][1:][:-1].split(',')
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+    except:
+        jobs_f=[]
+    return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':jobs_f})
 
 def interviewer(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
         return redirect('/')
-    return render(request, 'interviewer.html')
+    user_id = request.session.get('user_id')
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM jobs where Added_By= %s",[user_id])
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            jobs_dict = {
+                'Job_ID': job[0],
+                'Job_Title': job[1],
+                'Job_Location': job[2],
+                'Job_Description': job[3],
+                'Job_Requirements': job[4][1:][:-1].split(','),
+                'Job_Status': job[6]
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+            # print(jobs_f)
+    except:
+        jobs_f=[]
+    return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
 
 def logout_view(request):
     request.session.flush()  # Clear the session data
@@ -147,7 +185,7 @@ def apply(request):
         resume_text = extract_text_from_pdf(pdf_path).lower()
         payload = {
             "text": resume_text,
-            "confidenceThreshold": 0.6
+            "confidenceThreshold": 0.8
         }
 
         response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
@@ -167,13 +205,14 @@ def addJob(request):
     descr = request.POST['desc']
     requirements = request.POST.getlist('requirement')
     requirements_json = json.dumps(requirements)
+    Added_By=request.session.get('user_id')
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM jobs WHERE job_ID=%s", ['job_ID'])
             exists = cursor.fetchone()[0]
             if exists:
                 return render(request,'interviewer.html',{'error':"This Job ID already exists"})
-            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s)", [job_ID, job_title, location, descr, requirements_json])
+            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s, %s,True)", [job_ID, job_title, location, descr, requirements_json,Added_By])
             cursor.close()
     except Exception as e:
             return render(request, 'interviewer.html',  {'error': str(e)}) 
@@ -188,7 +227,6 @@ def interviewer_info(request):
         'email': request.session.get('email'),
     }
     return render(request,'interviewer_info.html',{'interviewer':interviewer})
-
 def update_info(request):
         url = "https://emsiservices.com/skills/versions/latest/extract"
         if request.method=='POST':
@@ -237,5 +275,15 @@ def update_info(request):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
         return redirect('interviewer')
-
-
+    
+def scheduled_interview(request):
+    if not request.session.get('user_id'):
+        return redirect('/')
+    elif(request.session.get('user_role')=='interviewer'):
+        return render(request,'interviewer_scheduled_interview.html')
+    else:
+        return render(request,'candidate_scheduled_interview.html')
+def add_job(request):
+    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
+        return redirect('/')
+    return render(request,'Add_Jobs.html')

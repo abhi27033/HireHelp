@@ -1,0 +1,37 @@
+{% extends 'interviewer_base.html' %}
+
+{% block title %}Add Job{% endblock %}
+{% block content %}
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Job</h2>
+        <form class="space-y-4" action="addJob" method="POST">
+            {%csrf_token%}
+            <div class="flex mb-2">
+                <div class="w-1/2 pr-2">
+                    <label class="block text-gray-700">Job ID</label>
+                    <input type="text" name="job_ID" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Id">
+                </div>
+                <div class="w-1/2 pr-2">
+                    <label class="block text-gray-700">Job Title</label>
+                    <input type="text" name="job_title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Title">
+                </div>
+            </div>
+            <div>
+                <label class="block text-gray-700">Location</label>
+                <input type="text" name="location" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Location">
+            </div>
+            <div>
+              <label class="block text-gray-700">Job Description</label>
+              <textarea name="desc" class="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Job Description" id="jobDescription"></textarea>
+          </div>
+            <div id="requirementsContainer" class="space-y-4">
+                <div class="requirement-item flex items-center space-x-2">
+                    <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
+                    <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
+                </div>
+            </div>
+            <button type="button" class="btn-custom px-4 py-2 rounded-md" id="addRequirementBtn">Add Requirement</button>
+            <button type="submit" class="btn-custom px-4 py-2 rounded-md">Add Job</button>
+        </form>
+    </div>
+{%endblock%}
