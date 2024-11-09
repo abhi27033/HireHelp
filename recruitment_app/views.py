@@ -228,18 +228,27 @@ def interviewer_info(request):
     }
     return render(request,'interviewer_info.html',{'interviewer':interviewer})
 def update_info(request):
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        if request.method=='POST':
-            resume = request.FILES['resume']
-
+    # Handle form submission
+    if request.method == "POST":
+        # Get form data
+        first_name = request.POST.get('firstname')
+        last_name = request.POST.get('lastname')
+        experience_years = request.POST.get('experience_years')
+        email = request.POST.get('email')
+        mobile = request.POST.get('phone')
+        availability_json = request.POST.get('availability_json')
+        education_json = request.POST.get('education_json')
+        
+        # Handling resume upload
+        resume = request.FILES.get('resume')
         fs = FileSystemStorage(location='/tmp')  # Store in temp directory
         filename = fs.save(resume.name, resume)
         pdf_path = fs.path(filename)
         
         print(pdf_path)
 
-        #process
-        querystring = {"language":"en"}
+        # Process resume using Emsi API
+        url = "https://emsiservices.com/skills/versions/latest/extract"
         auth_url = "https://auth.emsicloud.com/connect/token"
         payload = {
             "client_id": "39emm9hnhgnzvhfd",
@@ -249,7 +258,7 @@ def update_info(request):
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = requests.post(auth_url, data=payload, headers=headers)
-        access_token=''
+        access_token = ''
 
         if response.status_code == 200:
             response_data = response.json()
@@ -266,16 +275,38 @@ def update_info(request):
             "confidenceThreshold": 0.8
         }
 
-        response = requests.request("POST", url, json=payload, headers=headers, params=querystring)
-        skills = response.json().get('data',[])
+        response = requests.request("POST", url, json=payload, headers=headers)
+        skills = response.json().get('data', [])
+        skills_json = []
+
         for skill in skills:
-            print(skill['skill']['name'])
+            skill_name = skill['skill']['name']
+            skills_json.append(skill_name)
+
+        # Convert list to JSON
+        skills_json_object = json.dumps(skills_json)
         
         if os.path.exists(pdf_path):
             os.remove(pdf_path)
             print(f"Temporary file {pdf_path} deleted.")
+        
+        try:
+            with connection.cursor() as cursor:
+                # Check if mobile number exists in the database
+                cursor.execute("SELECT COUNT(*) FROM interviewers WHERE mobile=%s", [mobile])
+                exists = cursor.fetchone()[0]
+                
+                if exists:
+                    # Update existing entry
+                    cursor.execute("UPDATE interviewers SET firstname=%s, lastname=%s, experience_years=%s, email=%s, skills=%s, education=%s, availability=%s, updated_at=NOW() WHERE mobile=%s", [first_name, last_name, experience_years, email, skills_json_object, education_json, availability_json, mobile])
+                else:
+                    # Insert new entry
+                    cursor.execute("INSERT INTO interviewers (firstname, lastname, mobile, email, experience_years, skills, education, availability) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [first_name, last_name, mobile, email, experience_years, skills_json_object, education_json, availability_json])
+                cursor.close()
+        except Exception as e:
+            return render(request, 'interviewer.html', {'error': str(e)})
+        
         return redirect('interviewer')
-    
 def scheduled_interview(request):
     if not request.session.get('user_id'):
         return redirect('/')
