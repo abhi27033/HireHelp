@@ -135,7 +135,7 @@ def interviewer(request):
             #     'query': job[2],
             #     'limit': 1,
             #     'indent': True,
-            #     'key': 'AIzaSyCYRMrkcrCxv5Zw5vZktP7haZ8FdMnrjI0',
+            #     'key': 'Your API Key',
             #     'types':'Organization'
             # }
 
