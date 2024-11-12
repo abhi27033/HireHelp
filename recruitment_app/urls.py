@@ -14,6 +14,7 @@ urlpatterns = [
     path('interviewerinfo',views.interviewer_info,name='interviewer_info'),
     path('update_info',views.update_info,name='UpdateInfo'),
     path('scheduled_interview',views.scheduled_interview,name='scheduled_interview'),
-    path('add_job',views.add_job,name='add_job')
+    path('add_job',views.add_job,name='add_job'),
+    path('job/<int:job_id>/', views.get_job_details, name='job_details')
 ]
 

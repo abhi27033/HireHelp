@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+/*color-pallete: #8a63e8, #5c57de, white, black*/
+
+.main-content {
+    font-family: "Playfair Display", serif;
+}
+
+.blutex {
+    color:#5c57de;
+}
+
+.grad-back {
+    border-color: #5c57de;
+    background: rgb(92,87,222);
+    background: linear-gradient(0deg, rgba(92,87,222,0.5349789574032738) 20%, rgba(138,99,232,1) 76%);
+}
+
+.illust1-back{
+    background-image: url('../static/images/Illustfinal.jpg');
+    background-size: cover;
+    background-position:left; 
+    background-repeat: no-repeat; 
+}
+
+.details-view {
+    display: none;
+}
+.active {
+    display: block;
+}

@@ -15,3 +15,11 @@ function applyJob(buttonElement) {
     infoDiv.classList.add('hidden');
     formDiv.classList.remove('hidden');
 }
+function cancel(buttonElement) {
+    var grandpaDiv = buttonElement.parentElement.parentElement.parentElement;
+    childDivs=grandpaDiv.children;
+    infoDiv=childDivs[0];
+    formDiv=childDivs[1];
+    infoDiv.classList.remove('hidden');
+    formDiv.classList.add('hidden');
+}

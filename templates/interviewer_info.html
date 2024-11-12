@@ -1,63 +1,247 @@
-{% extends 'interviewer_base.html' %}
-
-{% block title %}Interviewer Info {% endblock %}
+{% extends "interviewer_base.html" %}
+{% block title %} Profile {% endblock %}
+{% block extraLinks %}
+    <link rel="stylesheet" href="../static/profile.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 {% block content %}
-
-    <div class="container mx-auto p-8">
-        <h1 class="text-3xl font-bold text-center mb-8">Update Interviewer Information</h1>
-
+<div class="bg-gray-100 flex items-center justify-center min-h-screen mt-16">
+    <div class="glass-overlay p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center text-black">Update Interviewer Information</h1>
         <!-- Form container with increased width -->
-        <form action="update_info" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 max-w-lg mx-auto">
+        <form action="update_info" method="POST" enctype="multipart/form-data" class="space-y-4 inp" id="interviewer_info">
             {% csrf_token %}
             <div class="mb-4">
-                <label for="firstname" class="block text-gray-700 font-bold mb-2">First Name:</label>
-                <input type="text" value="{{ interviewer.firstname }}" name="firstname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+                <input type="text" name="firstname" class="w-full p-2 rounded border border-gray-300"  placeholder="First Name" required/>
             </div>
             <div class="mb-4">
-                <label for="lastname" class="block text-gray-700 font-bold mb-2">Last Name:</label>
-                <input type="text" value="{{ interviewer.lastname }}" name="lastname" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+                <input type="text" name="lastname" class="w-full p-2 rounded border border-gray-300" placeholder="Last Name" required/>
             </div>
             <div class="mb-4">
-                <label for="phone" class="block text-gray-700 font-bold mb-2">Phone Number:</label>
                 <input type="tel" value="{{interviewer.mobile}}" name="phone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your phone number" readonly/>
             </div>
             <div class="mb-4">
-                <label for="email" class="block text-gray-700 font-bold mb-2">Email:</label>
                 <input type="email" value="{{interviewer.email}}" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your email" readonly/>
             </div>
-            
             <!-- Radio Button for Active/Busy status -->
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Status:</label>
+                <label class="block text-gray-700 font-bold mb-2">Availability:</label>
+            
+                <!-- Monday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_monday" onchange="toggleDay('monday')" class="mr-2">
+                    <span class="font-bold w-1/4">Monday:</span>
+                    <span id="start_label_monday">From:</span>
+                    <input type="time"  
+                           id="start_monday" class="w-20 mx-2" oninput="updateTime('monday')" disabled>
+                    
+                  
+                    <span id="end_label_monday">To:</span>
+                    <input type="time"
+                           id="end_monday" class="w-20 mx-2" oninput="updateTime('monday')" disabled>
+                    
+                </div>
+            
+                <!-- Tuesday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_tuesday" onchange="toggleDay('tuesday')" class="mr-2">
+                    <span class="font-bold w-1/4">Tuesday:</span>
+                    <span id="start_label_tuesday">From:</span>
+                    <input type="time" 
+                           id="start_tuesday" class="w-20 mx-2" oninput="updateTime('tuesday')" disabled>
+                    
+                    
+                    <span id="end_label_tuesday">To:</span>
+                    <input type="time" 
+                           id="end_tuesday" class="w-20 mx-2" oninput="updateTime('tuesday')" disabled>
+                    
+                </div>
+            
+                <!-- Wednesday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_wednesday" onchange="toggleDay('wednesday')" class="mr-2">
+                    <span class="font-bold w-1/4">Wednesday:</span>
+                    <span id="start_label_wednesday">From:</span>
+                    <input type="time"
+                           id="start_wednesday" class="w-20 mx-2" oninput="updateTime('wednesday')" disabled>
+                    
+               
+                    <span id="end_label_wednesday">To:</span>
+                    <input type="time"
+                           id="end_wednesday" class="w-20 mx-2" oninput="updateTime('wednesday')" disabled>
+                    
+                </div>
+            
+                <!-- Thursday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_thursday" onchange="toggleDay('thursday')" class="mr-2">
+                    <span class="font-bold w-1/4">Thursday:</span>
+                    <span id="start_label_thursday">From:</span>
+                    <input type="time" 
+                           id="start_thursday" class="w-20 mx-2" oninput="updateTime('thursday')" disabled>
+                    
+                    <span id="end_label_thursday">To:</span>
+                    <input type="time"
+                           id="end_thursday" class="w-20 mx-2" oninput="updateTime('thursday')" disabled>
+                    
+                </div>
+            
+                <!-- Friday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_friday" onchange="toggleDay('friday')" class="mr-2">
+                    <span class="font-bold w-1/4">Friday:</span>
+                    <span id="start_label_friday">From:</span>
+                    <input type="time" 
+                           id="start_friday" class="w-20 mx-2" oninput="updateTime('friday')" disabled>
+                    
+                    <span id="end_label_friday">To:</span>
+                    <input type="time"  
+                           id="end_friday" class="w-20 mx-2" oninput="updateTime('friday')" disabled>
+                    
+                </div>
+            
+                <!-- Saturday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_saturday" onchange="toggleDay('saturday')" class="mr-2">
+                    <span class="font-bold w-1/4">Saturday:</span>
+                    <span id="start_label_saturday">From:</span>
+                    <input type="time"
+                           id="start_saturday" class="w-20 mx-2" oninput="updateTime('saturday')" disabled>
+                    <span id="end_label_saturday">To:</span>
+                    <input type="time"
+                           id="end_saturday" class="w-20 mx-2" oninput="updateTime('saturday')" disabled>
+                    
+                </div>
+            
+                <!-- Sunday -->
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="check_sunday" onchange="toggleDay('sunday')" class="mr-2">
+                    <span class="font-bold w-1/4">Sunday:</span>
+                    <span id="start_label_sunday">From:</span>
+                    <input type="time" 
+                           id="start_sunday" class="w-20 mx-2" oninput="updateTime('sunday')" disabled>
+                    
+                    <span id="end_label_sunday">To: </span>
+                    <input type="time" 
+                           id="end_sunday" class="w-20 mx-2" oninput="updateTime('sunday')" disabled>
+                    
+                </div>
+            
+                <input type="hidden" name="availability_json" id="availability_json">
+            </div>
+            
+            <!-- Experience Years Slider -->
+            <div class="mb-4">
+                <label for="experience_years" class="block text-gray-700 font-bold mb-2">Experience Years:</label>
                 <div class="flex items-center">
-                    <input type="radio" id="active" name="status" value="active" class="mr-2" checked>
-                    <label for="active" class="mr-4">Active</label>
-                    <input type="radio" id="busy" name="status" value="busy" class="mr-2">
-                    <label for="busy">Busy</label>
+                    <input type="range" id="experience_years" name="experience_years" min="0" max="50" value="0" class="w-full" oninput="this.nextElementSibling.value = this.value">
+                    <input type="number" value="0" id="experience_years_input" class="ml-2 w-16" name="experience_years" min="0" max="50" oninput="document.getElementById('experience_years').value = this.value">
                 </div>
             </div>
-
             <div id="education-container" class="mb-4">
-                <h2 class="text-xl font-bold mb-4">Education</h2>
             </div>
             <div class="mb-4">
-                <button type="button" class="btn-custom bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md" onclick="addEducation()">Add Education</button>
+                <button type="button" class="custom-btn w-full p-2 border-gray-300 rounded" onclick="addEducation()" placeholder="Education">Add Education</button>
             </div>
             <div class="mb-4">
                 <label for="resume" class="block text-gray-700 font-bold mb-2">Upload Resume:</label>
-                <input type="file" id="resume" name="resume" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required/>
+                <input type="file" id="resume" name="resume" class="w-full p-2 border-gray-300 rounded" required/>
             </div>
             <div class="flex items-center justify-between">
-                <button type="submit" class="btn-custom text-white font-bold py-2 px-4 rounded-md">Save Info</button>
+                <button type="submit" class="custom-btn w-full py-2 rounded" onclick="test()"">Save Info</button>
             </div>
         </form>
     </div>
+</div>
     <script>
+        console.log("Script is loaded");
+        function toggleDay(day) {
+            const isChecked = document.getElementById(`check_${day}`).checked;
+            document.getElementById(`start_${day}`).disabled = !isChecked;
+            document.getElementById(`end_${day}`).disabled = !isChecked;
+        }
+    
+        function updateTime(day) {
+            // Add Notification TO make sure time difference between from and to is atleast 1 Hour
+            const startInput = document.getElementById(`start_${day}`);
+            const endInput = document.getElementById(`end_${day}`);
+            // console.log(startInput.Value);
+            if (startInput.value && endInput.value) {
+                const startTime = new Date(`1970-01-01T${startInput.value}:00`);
+                const endTime = new Date(`1970-01-01T${endInput.value}:00`);
+                
+                // Calculate the difference in milliseconds
+                const difference = endTime - startTime;
+                const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+
+                // Check if the difference is less than one hour
+                if (difference < oneHour) {
+                    // Set end time to exactly 1 hour after the start time
+                    const newEndTime = new Date(startTime.getTime() + oneHour);
+
+                    // Format newEndTime as HH:MM for the input value
+                    const hours = String(newEndTime.getHours()).padStart(2, '0');
+                    const minutes = String(newEndTime.getMinutes()).padStart(2, '0');
+                    endInput.value = `${hours}:${minutes}`;
+                }
+            }else if(startInput.value){
+                const oneHour = 60 * 60 * 1000;
+                const startTime = new Date(`1970-01-01T${startInput.value}:00`);
+                const newEndTime = new Date(startTime.getTime() + oneHour);
+                // Format newEndTime as HH:MM for the input value
+                const hours = String(newEndTime.getHours()).padStart(2, '0');
+                const minutes = String(newEndTime.getMinutes()).padStart(2, '0');
+                endInput.value = `${hours}:${minutes}`;
+            }else if(endInput.value){
+                const oneHour = 60 * 60 * 1000;
+                const endTime = new Date(`1970-01-01T${endInput.value}:00`);
+                const newStartTime = new Date(endTime.getTime() - oneHour);
+                // Format newStartTime as HH:MM for the input value
+                const hours = String(newStartTime.getHours()).padStart(2, '0');
+                const minutes = String(newStartTime.getMinutes()).padStart(2, '0');
+                startInput.value = `${hours}:${minutes}`;
+            }
+        }
+
+        function test() {
+        // Collect availability data
+        const availability = {};
+        const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+        
+        daysOfWeek.forEach(day => {
+            const isChecked = document.getElementById(`check_${day}`).checked;
+            if (isChecked) {
+                availability[day] = {
+                    start: (document.getElementById(`start_${day}`).value),
+                    end: (document.getElementById(`end_${day}`).value)
+                };
+            }
+        });
+        console.log("Availability Data:", availability);
+        // Save the availability as a JSON string to the hidden input
+        document.getElementById("availability_json").value = JSON.stringify(availability);
+
+        // Collect education data
+        const educationEntries = [];
+        const educationFields = document.querySelectorAll('.education-entry');
+        educationFields.forEach(entry => {
+            const qualification = entry.querySelector('[name="qualification[]"]').value;
+            const degree = entry.querySelector('[name="degree[]"]').value;
+            const specialization = entry.querySelector('[name="specialization[]"]').value;
+            educationEntries.push({ qualification, degree, specialization });
+        });
+
+        // Save the education data as a JSON string
+        document.getElementById("education_json").value = JSON.stringify(educationEntries);
+
+         // Get the form element and submit it
+        const form = document.getElementById('interviewer_form');
+        form.submit();
+        }
         function addEducation() {
             const educationContainer = document.getElementById('education-container');
             const newEducation = document.createElement('div');
             newEducation.classList.add('mb-4', 'education-entry');
-
             newEducation.innerHTML = `
                 <div class="mb-4">
                     <label for="qualification" class="block text-gray-700 font-bold mb-2">Qualification Level:</label>
@@ -71,14 +255,13 @@
                     <label for="specialization" class="block text-gray-700 font-bold mb-2">Specialization:</label>
                     <input type="text" name="specialization[]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter your specialization" />
                 </div>
-                <button type="button" class="btn-custom bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md" onclick="removeEducation(this)">Remove Education</button>
+                <button type="button" class="custom-btn py-2 px-4 rounded" onclick="removeEducation(this)">Remove Education</button>
             `;
             educationContainer.appendChild(newEducation);
         }
-
         function removeEducation(button) {
             const educationEntry = button.parentNode;
             educationEntry.remove();
         }
     </script>
-{%endblock%}
+{% endblock %}

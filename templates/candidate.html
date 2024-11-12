@@ -1,58 +1,165 @@
 {% extends 'candidate_base.html' %}
+{% block extraLinks %}
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<link rel="stylesheet" href="..\static\interviewer.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
+{% endblock %}
 {% block title %}candidate {% endblock %}
 {% block content %}
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4" id="Jobs">Jobs</h2>
-                {% for job in fetched_jobs %}
-                <div class="space-y-4">
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>{{job.Job_Title}}</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> {{job.Job_ID}}</p>
-                        <p class="text-gray-500"><b>Location:</b> {{job.Job_Location}}</p>
-                        <p class="text-gray-500"><b>Job Description:</b> {{job.Job_Description}}</p>
-                        <p class="text-gray-500"><b>Requirements: </b>
-                            <ul class="list-disc list-inside text-gray-500"> 
-                            {%for req in job.Job_Requirements%}
-                            <li>{{req}} </li>
-                            {%endfor%}
-                            </ul>
-                        </p>
-                        <button class="btn-custom px-4 py-2 rounded-md mt-2 apply" onclick="apply(this)">Want to Apply</button>
+<div class="flex items-center justify-center mt-20 h-screen mr-10 mr-10 mb-10">
+    <div class="rounded-box w-full lg:w-[1400px] sm:px-2 h-screen m-10">
+        <div class="flex h-full">
+            <!-- Job List Section -->
+            <div class="lg:w-1/3 overflow-y-auto bg-white border-r border-gray-300 py-4 px-2">
+                <!-- Job Card -->
+                 {% for job in fetched_jobs%}
+                <div class="mb-4 rounded-border border-b-2 border-gray-400 px-4 py-2 cursor-pointer hover:bg-gray-50" data-job-id={{job.Job_ID}}>
+                    <h3 class="text-lg font-semibold text-gray-900">{{job.Job_Title}}</h3>
+                    <p class="text-gray-600"> {{job.Company_Name}}</p>
+                    <p class="text-gray-500">{{job.Job_Location}}</p>
+                    <p class="text-gray-700">₹{{job.Pay}} </p>
+                    <p class="text-sm text-gray-400 mt-2">Posted On: {{job.DateOfPosting}}</p>
+                </div>
+                {%endfor%}
+            </div>
+            <!--deatiled job view-->
+            <div class="lg:w-2/3 bg-white p-8 m-10 ml-4 overflow-auto custom-scrollbar" id="job-details">
+                <p> Select a Job to View</p>
+            </div>
+<script>
+    document.querySelectorAll('.rounded-border').forEach(div => {
+        div.addEventListener('click', async function() {
+            const jobId = this.getAttribute('data-job-id');
+            
+            // Remove 'selected' class from all cards and add it to the clicked one
+            document.querySelectorAll('.rounded-border').forEach(d => d.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            try {
+                // Fetch job details asynchronously
+                const response = await fetch(`/job/${jobId}/`);
+                const jobDetails = await response.json();
+                
+                if (response.ok) {
+                    // Populate the #job-details container with fetched data
+                    document.getElementById('job-details').innerHTML = `
+                        <div>
+                    <div class="mb-4 flex items-center">
+    
+                        <h2 class="text-2xl font-semibold text-gray-900">${jobDetails.Company_Name} • ${jobDetails.Job_Location}</h2>
                     </div>
-                {% endfor %}
-                <!--Job id ke hiab se div uske andar 2 div form wala hidden-->
-                    <!--after apply appear-->
-                    <div class="hidden bg-gray-100 p-4 rounded-md mt-4 apply">
-                        <form action="apply" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <p class="text-gray-700"><b>Personal Information:</b></p>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
-                                        <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                        <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
+                    <p class="text-gray-600 mt-1">${jobDetails.Job_Title}</p>
+                    <div class="border-t-2 border-gray-400 mt-4">
+                        <h3 class="text-lg font-semibold mt-4 text-gray-900">Expectations from a ${jobDetails.Job_Title} at ${jobDetails.Company_Name}</h3>
+                        <p class="text-gray-700 mt-2">Requirements of the candidate:</p>
+                        <ul class="mt-4 list-disc list-inside space-y-2">
+                                ${jobDetails.Job_Requirements.map(req => `<li><span class="font-semibold">${req}</span></li>`).join('')}
+                        </ul>
+                    <div>
+                    <div class="border-t-2 border-gray-400 mt-4">
+                        <h3 class="text-lg font-semibold mt-8 text-gray-900">Job Description</h3>
+                            ${jobDetails.Job_Description}
+    
+                    </div>
+                    <div class="border-t-2 border-gray-400 mt-4">
+                        <h2 class="text-xl font-semibold mb-4 mt-4">${jobDetails.Job_Title}</h2>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-lg font-medium">Average Base Pay</span>
+                            <span class="text-2xl font-bold">$100,000</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-lg font-medium">Additional Pay</span>
+                            <span class="text-lg">$10,000</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-lg font-medium">Total Pay</span>
+                            <span class="text-lg">$110,000</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mt-4">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            This is an estimated total pay. Actual pay may vary.
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t-2 border-gray-400 mt-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-4">Employee Reviews</h3>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="flex-shrink-0">
+                                    <img src="https://placehold.co/30x30" alt="Reviewer Avatar Placeholder" class="rounded-full">
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-800">John Doe</p>
+                                    <div class="flex items-center text-yellow-500">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
                                     </div>
                                 </div>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
-                                        <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" readonly />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                        <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" readonly />
+                            </div>
+                            <p class="text-gray-600">Great company to work for with lots of opportunities for growth.</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center mb-2">
+                                <div class="flex-shrink-0">
+                                    <img src="https://placehold.co/30x30" alt="Reviewer Avatar Placeholder" class="rounded-full">
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-800">Jane Smith</p>
+                                    <div class="flex items-center text-yellow-500">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
                                     </div>
                                 </div>
-                                <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
-                                <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
-                                <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2" onclick="applyJob(this)">Submit Application</button>
-                        </form> 
-                </div>                    
+                            </div>
+                            <p class="text-gray-600">Supportive team and management, but work-life balance could be better.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button class="mt-4 back-purp text-white px-4 py-2 rounded">
+                        Apply Here
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
+                    `;
+                } else {
+                    document.getElementById('job-details').innerHTML = `<p class="text-red-500">Error: ${jobDetails.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching job details:', error);
+                document.getElementById('job-details').innerHTML = `<p class="text-red-500">Failed to fetch job details.</p>`;
+            }
+        });
+    });
+     
+      function getCompanyLogo(companyName) {
+    var service_url = 'https://kgsearch.googleapis.com/v1/entities:search';
+    var params = {
+        'query': companyName,
+        'limit': 1,
+        'indent': true,
+        'key': 'YourAPIKey',  // Replace with your actual API key
+    };
+
+    return $.getJSON(service_url, params).then(function(response) {
+        // Check if logo exists in the response
+        if (response.itemListElement && response.itemListElement[0] && response.itemListElement[0].result.logo) {
+            return response.itemListElement[0].result.logo.contentUrl;
+        } else {
+            return null;  // Return null if no logo is found
+        }
+    });
+}
+</script>
  {%endblock%}
