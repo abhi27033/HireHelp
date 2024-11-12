@@ -2,57 +2,63 @@
 
 {% block title %}candidate {% endblock %}
 {% block content %}
-            <div class="bg-white shadow-lg rounded-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4" id="Jobs">Jobs</h2>
-                {% for job in fetched_jobs %}
-                <div class="space-y-4">
-                    <div class="bg-gray-100 p-4 rounded-md">
-                        <p class="text-gray-700"><b>{{job.Job_Title}}</b></p>
-                        <p class="text-gray-500"><b>Job ID:</b> {{job.Job_ID}}</p>
-                        <p class="text-gray-500"><b>Location:</b> {{job.Job_Location}}</p>
-                        <p class="text-gray-500"><b>Job Description:</b> {{job.Job_Description}}</p>
-                        <p class="text-gray-500"><b>Requirements: </b>
-                            <ul class="list-disc list-inside text-gray-500"> 
-                            {%for req in job.Job_Requirements%}
-                            <li>{{req}} </li>
-                            {%endfor%}
-                            </ul>
-                        </p>
-                        <button class="btn-custom px-4 py-2 rounded-md mt-2 apply" onclick="apply(this)">Want to Apply</button>
-                    </div>
-                {% endfor %}
-                <!--Job id ke hiab se div uske andar 2 div form wala hidden-->
-                    <!--after apply appear-->
-                    <div class="hidden bg-gray-100 p-4 rounded-md mt-4 apply">
-                        <form action="apply" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <p class="text-gray-700"><b>Personal Information:</b></p>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
-                                        <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                        <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
-                                    </div>
-                                </div>
-                                <div class="flex mb-2">
-                                    <div class="w-1/2 pr-2">
-                                        <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
-                                        <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" readonly />
-                                    </div>
-                                    <div class="w-1/2 pl-2">
-                                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                                        <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" readonly />
-                                    </div>
-                                </div>
-                                <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
-                                <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
-                                <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2" onclick="applyJob(this)">Submit Application</button>
-                        </form> 
-                </div>                    
-                </div>
-            </div>
+<div class="bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4" id="Jobs">Jobs</h2>
+    {% for job in fetched_jobs %}
+    <div class="space-y-4">
+        <div class="bg-gray-100 p-4 rounded-md">
+            <p class="text-gray-700"><b>{{ job.Job_Title }}</b></p>
+            <p class="text-gray-500"><b>Job ID:</b> {{ job.Job_ID }}</p>
+            <p class="text-gray-500"><b>Location:</b> {{ job.Job_Location }}</p>
+            <p class="text-gray-500"><b>Job Description:</b> {{ job.Job_Description }}</p>
+            <p class="text-gray-500"><b>Requirements:</b>
+                <ul class="list-disc list-inside text-gray-500">
+                    {% for req in job.Job_Requirements %}
+                    <li>{{ req }}</li>
+                    {% endfor %}
+                </ul>
+            </p>
+            <button class="btn-custom px-4 py-2 rounded-md mt-2 apply" onclick="apply(this)">Want to Apply</button>
         </div>
- {%endblock%}
+
+        <!-- Job Application Form (inside the loop) -->
+        <div class="hidden bg-gray-100 p-4 rounded-md mt-4 apply">
+            <form action="{% url 'submit_application' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Hidden field to pass the Job ID -->
+                <input type="hidden" name="job_id" value="{{ job.Job_ID }}" />
+
+                <p class="text-gray-700"><b>Personal Information:</b></p>
+                <div class="flex mb-2">
+                    <div class="w-1/2 pr-2">
+                        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
+                    </div>
+                    <div class="w-1/2 pl-2">
+                        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
+                    </div>
+                </div>
+                <div class="flex mb-2">
+                    <div class="w-1/2 pr-2">
+                        <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
+                        <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" readonly />
+                    </div>
+                    <div class="w-1/2 pl-2">
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" readonly />
+                    </div>
+                </div>
+                <p class="text-gray-700"><b>Experience (Years):</b></p>
+                <input type="number" name="experience_years" placeholder="Experience Years" class="mb-2 p-2 border rounded w-full" required />
+
+                <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
+                <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
+
+                <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2">Submit Application</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
