@@ -4,7 +4,7 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <link rel="stylesheet" href="..\static\interviewer.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
+<script src="../static/candidate.js"></script>
 {% endblock %}
 {% block title %}candidate {% endblock %}
 {% block content %}
@@ -28,6 +28,49 @@
             <div class="lg:w-2/3 bg-white p-8 m-10 ml-4 overflow-auto custom-scrollbar" id="job-details">
                 <p> Select a Job to View</p>
             </div>
+            <!-- Application Modal -->
+<div id="applicationModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg relative">
+        <!-- Close Button -->
+        <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" onclick="closeModal()">×</button>
+
+        <form action="{% url 'submit_application' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- Hidden field to pass the Job ID -->
+            <input type="hidden" name="job_id" id="job_id_field" value="" />
+
+            <p class="text-gray-700"><b>Personal Information:</b></p>
+            <div class="flex mb-2">
+                <div class="w-1/2 pr-2">
+                    <label for="firstname" class="block text-sm font-medium text-gray-700">First Name</label>
+                    <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
+                </div>
+                <div class="w-1/2 pl-2">
+                    <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+                    <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
+                </div>
+            </div>
+            <div class="flex mb-2">
+                <div class="w-1/2 pr-2">
+                    <label for="mobile" class="block text-sm font-medium text-gray-700">Mobile</label>
+                    <input type="text" name="mobile" value="{{ candidate.mobile }}" placeholder="Mobile" class="p-2 border rounded w-full" readonly />
+                </div>
+                <div class="w-1/2 pl-2">
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" name="email" value="{{ candidate.email }}" placeholder="Email" class="p-2 border rounded w-full" readonly />
+                </div>
+            </div>
+            <p class="text-gray-700"><b>Experience (Years):</b></p>
+            <input type="number" name="experience_years" placeholder="Experience Years" class="mb-2 p-2 border rounded w-full" required />
+
+            <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
+            <input type="file" name="resume" accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
+
+            <button type="submit" class="btn-custom px-4 py-2 rounded-md mt-2">Submit Application</button>
+        </form>
+    </div>
+</div>
+
 <script>
     document.querySelectorAll('.rounded-border').forEach(div => {
         div.addEventListener('click', async function() {
@@ -125,7 +168,7 @@
                     </div>
                 </div>
                 <div class="text-right">
-                    <button class="mt-4 back-purp text-white px-4 py-2 rounded">
+                    <button class="mt-4 back-purp text-white px-4 py-2 rounded" onclick=apply(this) data-job-id="${jobId}">
                         Apply Here
                     </button>
                 </div>
@@ -143,23 +186,5 @@
         });
     });
      
-      function getCompanyLogo(companyName) {
-    var service_url = 'https://kgsearch.googleapis.com/v1/entities:search';
-    var params = {
-        'query': companyName,
-        'limit': 1,
-        'indent': true,
-        'key': 'YourAPIKey',  // Replace with your actual API key
-    };
-
-    return $.getJSON(service_url, params).then(function(response) {
-        // Check if logo exists in the response
-        if (response.itemListElement && response.itemListElement[0] && response.itemListElement[0].result.logo) {
-            return response.itemListElement[0].result.logo.contentUrl;
-        } else {
-            return null;  // Return null if no logo is found
-        }
-    });
-}
 </script>
  {%endblock%}

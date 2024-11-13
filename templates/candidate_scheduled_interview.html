@@ -1,10 +1,12 @@
 {% extends 'candidate_base.html' %}
 {% block extraLinks %}
 <link rel="stylesheet" href="..\static\InterviewSchedule.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-{%endblock%}
-{% block title %}Scheduled INterview {% endblock %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+{% endblock %}
+
+{% block title %}Scheduled Interview {% endblock %}
+
 {% block content %}
 <div class='main-content'>
     <div class="flex flex-col h-screen overflow-y-auto mt-16 md:flex-row">
@@ -12,50 +14,74 @@
         <div class="grad-back w-screen h-1/2 md:w-1/4 md:h-screen overflow-y-auto shadow-lg p-4">
             <h2 class="text-3xl font-bold mb-6 text-white">Scheduled Interviews</h2>
             <div class="space-y-4 mt-2">
-                <div class="flex items-center p-3 bg-gray-100 rounded-lg cursor-pointer transition shadow-md" onclick="showDetails(0)">
+                {% for interview in fetched_interviews %}
+                <div class="flex items-center p-3 bg-gray-100 rounded-lg cursor-pointer transition shadow-md mycard"
+                     data-cid="{{ interview.cid }}" data-jid="{{ interview.jid }}">
                     <img src="https://placehold.co/50x50" alt="Candidate Photo" class="rounded-full mr-3 border-2 border-blue-600">
                     <div class="w-full">
-                        <h3 class="blutex font-bold text-lg">Research Scientist</h3>
-                        <p class="font-bold text-md text-black-600">2024-10-15</p>
-                        <p class="font-bold text-md text-black-600">10:00 AM</p>
-                    </div>                    
-                </div>
-            </div>
-        </div>
-        <!-- Main Content -->
-        <div class="h-1/2 w-screen md:h-screen md:w-3/4 overflow-y-auto p-8 bg-white shadow-lg">
-            <div id="details-0" class="details-view active">
-                <div class='illust1-back rounded-2xl pl-2 pt-2 pb-1 mb-3'>
-                    <h2 class="text-2xl font-bold mb-6 text-white">INTERVIEW DETAILS</h2>
-                    <div class="flex flex-col md:flex-row items-center mb-6">
-                        <img src="https://placehold.co/100x100" alt="Candidate Photo" class="rounded-full mb-6 md:mr-6 shadow-lg border-4 border-blue-600">
-                        <div class='bg-white rounded-lg p-4'>
-                            <h3 class="text-xl font-semibold blutex"><strong class="blutex">Job Title:</strong> Research Scientist</h3>
-                            <p class="font-bold text-lg text-balck-600"><strong class="blutex">Date:</strong> 2024-10-15 | <strong class="blutex">Time:</strong> 10:00 AM</p>
-                            <p class="font-bold text-lg text-black-600"><strong class="blutex">Interview Panel:</strong> Aryan Tandon, Abhishek Singh</p>
-                        </div>
+                        <h3 class="blutex font-bold text-lg">{{ interview.job_title }}</h3>
+                        <p class="font-bold text-md text-black-600">{{ interview.date }}</p>
+                        <p class="font-bold text-md text-black-600">{{ interview.time }}</p>
                     </div>
                 </div>
-                <div class="bg-gray-100 p-6 rounded-lg shadow-md mb-4 border-l-4">
-                    <p class="mb-2 text-lg text-black-600"><strong class="blutex">Job ID:</strong> 1332</p>
-                    <p class='text-lg text-black-600'><strong class="blutex">Applicant ID:</strong> 300</p>
-                </div>
-                <div class="bg-gray-100 p-6 rounded-lg shadow-md mb-4 border-l-4">
-                    <p class='text-lg text-black-600'><strong class="blutex">Job Description:</strong> The Research Scientist will be responsible for conducting high-quality research and development in the field of defense technologies. This role involves designing and executing experiments, analyzing data, and collaborating with cross-functional teams to develop innovative solutions.</p>
-                </div>
-                <div class="bg-gray-100 p-6 rounded-lg shadow-md border-l-4">
-                    <p class='text-lg text-black-600'><strong class="blutex">Requirements:</strong> The ideal candidate should have a strong background in physics or engineering, excellent analytical skills, and experience in research methodologies.</p>
-                </div>
+                {% endfor %}
             </div>
+        </div>
+
+        <!-- Main Content (Initially empty, will show details on card click) -->
+        <div class="h-1/2 w-screen md:h-screen md:w-3/4 overflow-y-auto p-8 bg-white shadow-lg" id="details-view">
+            <p> Select an Interview to view details</p>
         </div>
     </div>
 </div>
-    <script>
-        function showDetails(index) {
-            const detailsViews = document.querySelectorAll('.details-view');
-            detailsViews.forEach((view, i) => {
-                view.classList.toggle('active', i === index);
-            });
-        }
-    </script>
-    {%endblock%}
+
+<<script>
+    // Attach click event listeners to all interview cards
+    document.querySelectorAll('.mycard').forEach(card => {
+        card.addEventListener('click', async function() {
+            const cid = this.getAttribute('data-cid');
+            const jid = this.getAttribute('data-jid');
+
+            // Remove 'selected' class from all cards and add it to the clicked one
+            document.querySelectorAll('.mycard').forEach(d => d.classList.remove('selected'));
+            this.classList.add('selected');
+
+            try {
+                // Fetch interview details asynchronously
+                const response = await fetch(`/fetch_interview_details/${cid}/${jid}/`);
+                const interviewDetails = await response.json();
+
+                if (response.ok) {
+                    // Populate the #details-view container with fetched interview details
+                    const detailsView = document.getElementById('details-view');
+                    detailsView.innerHTML = `
+                        <div class='illust1-back rounded-2xl pl-2 pt-2 pb-1 mb-3'>
+                            <h2 class="text-2xl font-bold mb-6 text-white">INTERVIEW DETAILS</h2>
+                            <div class="flex flex-col md:flex-row items-center mb-6">
+                                <img src="https://placehold.co/100x100" alt="Candidate Photo" class="rounded-full mb-6 md:mr-6 shadow-lg border-4 border-blue-600">
+                                <div class='bg-white rounded-lg p-4'>
+                                    <h3 class="text-xl font-semibold blutex"><strong class="blutex">Job Title:</strong> ${interviewDetails.job_title}</h3>
+                                    <p class="font-bold text-lg text-black-600"><strong class="blutex">Date:</strong> ${interviewDetails.dt} | <strong class="blutex">Time:</strong> ${interviewDetails.tm}</p>
+                                    <p class="font-bold text-lg text-black-600"><strong class="blutex">Interview Panel:</strong> ${interviewDetails.panel}</p>
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 p-6 rounded-lg shadow-md mb-4 border-l-4">
+                                <p class="mb-2 text-lg text-black-600"><strong class="blutex">Job ID:</strong> ${interviewDetails.jid}</p>
+                                <p class='text-lg text-black-600'><strong class="blutex">Applicant ID:</strong> ${interviewDetails.cid}</p>
+                            </div>
+                            <div class="bg-gray-100 p-6 rounded-lg shadow-md mb-4 border-l-4">
+                                <p class='text-lg text-black-600'><strong class="blutex">Job Description:</strong> ${interviewDetails.descr}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('details-view').innerHTML = `<p class="text-red-500">Error: ${interviewDetails.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching interview details:', error);
+                document.getElementById('details-view').innerHTML = `<p class="text-red-500">Failed to fetch interview details.</p>`;
+            }
+        });
+    });
+</script>
+{% endblock %}
