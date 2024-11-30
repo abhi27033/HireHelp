@@ -1,37 +1,132 @@
 {% extends 'interviewer_base.html' %}
-
 {% block title %}Add Job{% endblock %}
+{% block extraLinks %}
+    <link rel="stylesheet" href="..\static\addjob.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 {% block content %}
-    <div class="bg-white shadow-lg rounded-lg p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Job</h2>
-        <form class="space-y-4" action="addJob" method="POST">
-            {%csrf_token%}
-            <div class="flex mb-2">
-                <div class="w-1/2 pr-2">
-                    <label class="block text-gray-700">Job ID</label>
-                    <input type="text" name="job_ID" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Id">
+<!-- Notification Bar -->
+<div class="bg-gray-100 flex items-center justify-center min-h-screen mt-16">
+    {% if error %}
+        <div id="notification" class="fixed top-20 left-10">
+            <div class="relative flex items-center bg-white shadow-lg rounded-md py-3 px-6 max-w-md mx-auto">
+                <div class="flex flex-row items-center space-x-2">
+                    <svg data-slot="icon" class='w-5 h-5' fill="none" stroke-width="1.5" stroke="red" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path>
+                      </svg>
+                    <div class="text-sm font-medium ml-3">Error !</div>
                 </div>
-                <div class="w-1/2 pr-2">
-                    <label class="block text-gray-700">Job Title</label>
-                    <input type="text" name="job_title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Job Title">
+                <div class="text-xs tracking-wide text-gray-500 ml-2 mr-2">{{ error }}</div>
+                <div class="flex justify-center top-2 right-2  text-gray-400 hover:text-gray-800 cursor-pointer">
+                    <button id="closeNotification">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
-            <div>
-                <label class="block text-gray-700">Location</label>
-                <input type="text" name="location" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Location">
+        </div>
+{% endif %}
+    <div class="glass-overlay p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-4 text-center text-black">Post a Job</h2>
+        <form id="jobForm" class="space-y-4 inp" action="addJob" method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <input name="job_ID" type="text" id="job_ID" class="w-full p-2 rounded border border-gray-300" placeholder="Enter Job ID" required>
             </div>
-            <div>
-              <label class="block text-gray-700">Job Description</label>
-              <textarea name="desc" class="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Job Description" id="jobDescription"></textarea>
-          </div>
+            <div class="mb-4">
+                <input name="job_title" type="text" id="job_title" class="w-full p-2 rounded border border-gray-300" placeholder="Enter Job Title" required>
+            </div>
+            <div class="mb-4">
+                <input name="company_name" type="text" id="company_name" class="w-full p-2 rounded border border-gray-300" placeholder="Enter Company Name" required>
+            </div>
+            <div class="mb-4">
+                <input name="pay" type="text" id="pay" class="w-full p-2 rounded border border-gray-300" placeholder="Enter Expected Pay (CTC)">
+            </div>
+            <div class="mb-4">
+                <input name="location" type="text" id="location" class="w-full p-2 rounded border border-gray-300" placeholder="Enter Job Location" required>
+            </div>
+            <div class="mb-4">
+                <textarea name="desc" id="desc" class="w-full p-2 rounded border border-gray-300 resize-none overflow-hidden" placeholder="Enter Job Description" oninput="autoResize(this)" required></textarea>
+            </div>
             <div id="requirementsContainer" class="space-y-4">
                 <div class="requirement-item flex items-center space-x-2">
-                    <input type="text" name="requirement" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
-                    <button type="button" class="deleteRequirementBtn btn-custom px-2 py-1 rounded-md">Delete</button>
+                    <input name="requirement" id="requirement" type="text" class="w-full p-2 border border-gray-300 rounded-md" placeholder="Requirement">
+                    <button type="button" id="addRequirementBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8a63e8" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
                 </div>
             </div>
-            <button type="button" class="btn-custom px-4 py-2 rounded-md" id="addRequirementBtn">Add Requirement</button>
-            <button type="submit" class="btn-custom px-4 py-2 rounded-md">Add Job</button>
+            <div class="flex items-center space-x-2">
+            </div>
+            <button type="submit" class="w-full back-purp text-white py-2 rounded">Add Job</button>
         </form>
     </div>
+</div>
+
+<script>
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+
+    document.getElementById('addRequirementBtn').addEventListener('click', function() {
+        const container = document.getElementById('requirementsContainer');
+        const inputField = document.getElementById('requirement'); 
+        const inputText = inputField.value.trim();
+
+        if (inputText) {
+            const newRequirementDiv = document.createElement('div');
+
+            const newRequirement = document.createElement('input');
+            newRequirement.type = "text";
+            newRequirement.value = inputText;
+            newRequirement.readOnly = true;
+            newRequirement.style.backgroundColor = '#f5f6f8';
+            newRequirement.name='requirement-item-added';
+            
+            newRequirementDiv.classList.add('flex', 'items-center', 'justify-between');
+            
+
+            const deleteBtn = document.createElement('button');
+
+            deleteBtn.classList.add('deleteRequirementBtn', 'text-red-500', 'hover:text-red-700');
+            deleteBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8a63e8" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                </svg>  
+            `;
+
+            newRequirementDiv.appendChild(newRequirement);
+            newRequirementDiv.appendChild(deleteBtn);
+
+
+            container.insertBefore(newRequirementDiv, inputField.parentElement);
+            inputField.value = '';
+
+
+            deleteBtn.addEventListener('click', function() {
+                newRequirementDiv.remove();
+            });
+        }
+    });
+    window.onload = function() {
+        const notification = document.getElementById('notification');
+        const closeButton = document.getElementById('closeNotification');
+
+        closeButton.addEventListener('click', ()=>{
+            notification.style.display = 'none';
+        });
+
+        if (notification) {
+            setTimeout(()=>{
+                notification.style.display = 'none';
+            }, 6000);
+        } 
+    };
+
+</script>
+
 {%endblock%}

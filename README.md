@@ -1,6 +1,9 @@
 # Steps to connect the authentication and other relevant tables in Database<br>
 
 ## Run the below SQL commands in MySQL Workbench <br>
+# Steps to connect the authentication and other relevant tables in Database<br>
+
+## Run the below SQL commands in MySQL Workbench <br>
 
 
 ```sql
@@ -22,6 +25,9 @@ CREATE TABLE jobs (
     descr TEXT,
     requirements TEXT,
     Added_By INT,
+    company_name varchar(200),
+    date_of_posting date,
+    pay decimal,
     FOREIGN KEY (Added_By) REFERENCES user(sid),
     status boolean
 );
@@ -38,6 +44,17 @@ CREATE TABLE interviewers (
     availability JSON, -- JSON column for storing availability details
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE candidates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    firstname VARCHAR(50) NOT NULL,
+    lastname VARCHAR(50) NOT NULL,
+    mobile VARCHAR(20) UNIQUE, -- Ensure mobile numbers are unique
+    email VARCHAR(100) UNIQUE, -- Ensure email addresses are unique
+    experience_years INT NOT NULL, -- Store experience in years
+    skills JSON, -- JSON column for storing skills
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp of creation
 );
 
 CREATE TABLE application (
@@ -66,7 +83,6 @@ CREATE TABLE scheduled_interview(
     tm VARCHAR(50) NOT NULL,
     dt VARCHAR(50) NOT NULL
 );
-
 ```
 
 ## This creates the database and now update the settings.py <br>

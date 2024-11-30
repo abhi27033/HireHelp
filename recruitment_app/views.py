@@ -6,9 +6,10 @@ from django.contrib.sessions.models import Session
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import logout
 import requests, fitz, os, json
+import urllib
+from django.http import JsonResponse
 from .mlmodel import mlscore
 from datetime import datetime, timedelta
-
 def index(request):
     # Clear the session data
     request.session.flush()
@@ -75,28 +76,6 @@ def register(request):
             return render(request, 'index.html',  {'error': str(e)}) 
     return redirect('/')        
 
-
-def parse_jobs():
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM jobs")
-            jobs = list(cursor.fetchall())
-        jobs_f=[]
-        # print(type(jobs[0]))
-        for job in jobs:
-            jobs_dict = {
-                'Job_ID': job[0],
-                'Job_Title': job[1],
-                'Job_Location': job[2],
-                'Job_Description': job[3],
-                'Job_Requirements': job[4][1:][:-1].split(',')
-            }
-            # print(jobs_dict['Job_Requirements'])
-            jobs_f.append(jobs_dict)
-    except:
-        jobs_f=[]
-    return jobs_f
-
 def candidate(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'candidate':
         return redirect('/')
@@ -106,10 +85,456 @@ def candidate(request):
         'mobile': request.session.get('mobile'),
         'email': request.session.get('email'),
     }
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT job_ID,job_title,location,company_name,pay,date_of_posting,status FROM jobs where status=true order by date_of_posting desc")
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            jobs_dict = {
+                'Job_ID':job[0],
+                'Job_Title':job[1],
+                'Job_Location':job[2],
+                'Company_Name':job[3],
+                'Pay':job[4],
+                'DateOfPosting': job[5],
+                'Job_Status': job[6],
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+    except:
+        jobs_f=[]
+    return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':jobs_f})
+
+def interviewer(request):
+    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
+        return redirect('/')
+    user_id = request.session.get('user_id')
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT job_ID,job_title,location,company_name,pay,date_of_posting,status FROM jobs where Added_By= %s order by date_of_posting desc",[user_id])
+            jobs = list(cursor.fetchall())
+        jobs_f=[]
+        # print(type(jobs[0]))
+        for job in jobs:
+            # jobs_dict = {
+            #     'Job_ID': job[0],
+            #     'Job_Title': job[1],
+            #     'Job_Location': job[2],
+            #     'Job_Description': job[3],
+            #     'Job_Requirements': job[4][1:][:-1].split(','),
+            #     'Job_Status': job[6],
+            #     'Company_Name':job[7],
+                
+            # }
+            # # Knowledge Graph API endpoint
+            # service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
+
+            # # Parameters for the API request
+            # params = {
+            #     'query': job[2],
+            #     'limit': 1,
+            #     'indent': True,
+            #     'key': 'Your API Key',
+            #     'types':'Organization'
+            # }
+
+            # # Create the full URL for the API request
+            # url = service_url + '?' + urllib.parse.urlencode(params)
+
+            # # Make the API call and load the response
+            # response = json.loads(urllib.request.urlopen(url).read())
+
+            # # Iterate through the results
+            # if response.get('itemListElement'):
+            #     entity = response['itemListElement'][0]['result']
+            #     entity_name = entity['name']
+            #     entity_score = response['itemListElement'][0]['resultScore']
+                
+            #     # Check if the entity has a logo property
+            #     logo_url = None
+            #     if 'image' in entity and 'contentUrl' in entity['image']:
+            #         logo_url = entity['image']['contentUrl']
+            #     print("LOGO:", logo_url)
+            jobs_dict = {
+                'Job_ID':job[0],
+                'Job_Title':job[1],
+                'Job_Location':job[2],
+                'Company_Name':job[3],
+                'Pay':job[4],
+                'DateOfPosting': job[5],
+                'Job_Status': job[6],
+            }
+            # print(jobs_dict['Job_Requirements'])
+            jobs_f.append(jobs_dict)
+            # print(jobs_f)
+    except Exception as e:
+        jobs_f=[]
+        # print(e)
+    return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
+
+def logout_view(request):
+    request.session.flush()  # Clear the session data
+    return redirect('/')  # Redirect to homepage after logout
+
+
+def extract_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    doc.close()
+    return text
+def submit_application(request):
+    if request.method == 'POST':
+        job_id = request.POST.get('job_id')
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        mobile = request.POST.get('mobile')
+        email = request.POST.get('email')
+        experience_years = request.POST.get('experience_years')
+        resume = request.FILES.get('resume')
+        # Handling resume upload
+        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+        filename = fs.save(resume.name, resume)
+        pdf_path = fs.path(filename)
+        print(pdf_path)
+        # Process resume using Emsi API
+        url = "https://emsiservices.com/skills/versions/latest/extract"
+        auth_url = "https://auth.emsicloud.com/connect/token"
+        payload = {
+            "client_id": "39emm9hnhgnzvhfd",
+            "client_secret": "1oW72wzJ",
+            "grant_type": "client_credentials",
+            "scope": "emsi_open"
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        response = requests.post(auth_url, data=payload, headers=headers)
+        access_token = ''
+
+        if response.status_code == 200:
+            response_data = response.json()
+            access_token = response_data.get('access_token')
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        resume_text = extract_text_from_pdf(pdf_path).lower()
+        payload = {
+            "text": resume_text,
+            "confidenceThreshold": 0.8
+        }
+
+        response = requests.request("POST", url, json=payload, headers=headers)
+        skills = response.json().get('data', [])
+        skills_json = []
+
+        for skill in skills:
+            skill_name = skill['skill']['name']
+            skills_json.append(skill_name)
+
+        # Convert list to JSON
+        skills_json_object = json.dumps(skills_json)
+        
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+            print(f"Temporary file {pdf_path} deleted.")
+        inserted_id = -1
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills) VALUES (%s, %s, %s, %s, %s, %s, %s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object])
+                cursor.execute("SELECT LAST_INSERT_ID()")
+                inserted_id = cursor.fetchone()[0]
+                cursor.close()
+        except Exception as e:
+            print(e)
+            return render(request, 'candidate.html',  {'error': str(e)}) 
+        
+        # code to populate scheduled_interview
+        schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
+
+        return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':parse_jobs})
+def submit_application(request):
+    if request.method == 'POST':
+        user_id = request.session.get('user_id')
+        job_id = request.POST.get('job_id')
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        mobile = request.POST.get('mobile')
+        email = request.POST.get('email')
+        experience_years = request.POST.get('experience_years')
+        resume = request.FILES.get('resume')
+        # Handling resume upload
+        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+        filename = fs.save(resume.name, resume)
+        pdf_path = fs.path(filename)
+        print(pdf_path)
+        # Process resume using Emsi API
+        url = "https://emsiservices.com/skills/versions/latest/extract"
+        auth_url = "https://auth.emsicloud.com/connect/token"
+        payload = {
+            "client_id": "39emm9hnhgnzvhfd",
+            "client_secret": "1oW72wzJ",
+            "grant_type": "client_credentials",
+            "scope": "emsi_open"
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        response = requests.post(auth_url, data=payload, headers=headers)
+        access_token = ''
+
+        if response.status_code == 200:
+            response_data = response.json()
+            access_token = response_data.get('access_token')
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        resume_text = extract_text_from_pdf(pdf_path).lower()
+        payload = {
+            "text": resume_text,
+            "confidenceThreshold": 0.8
+        }
+
+        response = requests.request("POST", url, json=payload, headers=headers)
+        skills = response.json().get('data', [])
+        skills_json = []
+
+        for skill in skills:
+            skill_name = skill['skill']['name']
+            skills_json.append(skill_name)
+
+        # Convert list to JSON
+        skills_json_object = json.dumps(skills_json)
+        
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+            print(f"Temporary file {pdf_path} deleted.")
+        inserted_id = -1
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object,user_id])
+                cursor.execute("SELECT LAST_INSERT_ID()")
+                inserted_id = cursor.fetchone()[0]
+                cursor.close()
+        except Exception as e:
+            print(e)
+            return redirect('candidate') 
+        
+        # code to populate scheduled_interview
+        schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
+
+        return redirect('candidate')
+
+def add_job(request):
+    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
+        return redirect('/')
+    return render(request,'Add_Jobs.html')
+
+def addJob(request):
+    job_ID = request.POST['job_ID']
+    job_title = request.POST['job_title']
+    location = request.POST['location']
+    descr = request.POST['desc']
+    requirements = request.POST.getlist('requirement-item-added')
+    requirements_json = json.dumps(requirements)
+    Added_By=request.session.get('user_id')
+    company_name = request.POST['company_name']
+    pay = request.POST['pay']
+    # print(company_name,pay)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM jobs WHERE job_ID=%s", [job_ID])
+            exists = cursor.fetchone()[0]
+            if exists:
+                print('IT exists yaarr')
+                return render(request,'Add_Jobs.html',{'error':"This Job ID already exists"})
+            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s,%s,%s,%s,CURRENT_DATE(),%s)", [job_ID, job_title, location, descr, requirements_json,Added_By,True,company_name,pay])
+            cursor.close()
+    except Exception as e:
+            print("he hari naath ye kya hua")
+            print(e)
+            return render(request, 'Add_Jobs.html',  {'error': str(e)}) 
+    return redirect('add_job')
+def interviewer_info(request):
+    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
+        return redirect('/')
+    interviewer = {
+        'firstname': request.session.get('firstname'),
+        'lastname': request.session.get('lastname'),
+        'mobile': request.session.get('mobile'),
+        'email': request.session.get('email'),
+    }
+    return render(request,'interviewer_info.html',{'interviewer':interviewer})
+def update_info(request):
+        if request.method == "POST":
+        # Get form data
+            user_id = request.session.get('user_id')
+            first_name = request.POST.get('firstname')
+            last_name = request.POST.get('lastname')
+            experience_years = request.POST.get('experience_years')
+            email = request.POST.get('email')
+            mobile = request.POST.get('phone')
+            availability_json = request.POST.get('availability_json')
+            education_json = request.POST.get('education_json')
+            
+            # Handling resume upload
+            resume = request.FILES.get('resume')
+            fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+            filename = fs.save(resume.name, resume)
+            pdf_path = fs.path(filename)
+            
+            print(pdf_path)
+
+            # Process resume using Emsi API
+            url = "https://emsiservices.com/skills/versions/latest/extract"
+            auth_url = "https://auth.emsicloud.com/connect/token"
+            payload = {
+                "client_id": "39emm9hnhgnzvhfd",
+                "client_secret": "1oW72wzJ",
+                "grant_type": "client_credentials",
+                "scope": "emsi_open"
+            }
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
+            response = requests.post(auth_url, data=payload, headers=headers)
+            access_token = ''
+
+            if response.status_code == 200:
+                response_data = response.json()
+                access_token = response_data.get('access_token')
+            
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+
+            resume_text = extract_text_from_pdf(pdf_path).lower()
+            payload = {
+                "text": resume_text,
+                "confidenceThreshold": 0.8
+            }
+
+            response = requests.request("POST", url, json=payload, headers=headers)
+            skills = response.json().get('data', [])
+            skills_json = []
+
+            for skill in skills:
+                skill_name = skill['skill']['name']
+                skills_json.append(skill_name)
+
+            # Convert list to JSON
+            skills_json_object = json.dumps(skills_json)
+            
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+                # print(f"Temporary file {pdf_path} deleted.")
+            
+            try:
+                with connection.cursor() as cursor:
+                    # Check if mobile number exists in the database
+                    cursor.execute("SELECT COUNT(*) FROM interviewers WHERE mobile=%s", [mobile])
+                    exists = cursor.fetchone()[0]
+                    
+                    if exists:
+                        # Update existing entry
+                        cursor.execute("UPDATE interviewers SET firstname=%s, lastname=%s, experience_years=%s, email=%s, skills=%s, education=%s, availability=%s, updated_at=NOW() WHERE mobile=%s", [first_name, last_name, experience_years, email, skills_json_object, education_json, availability_json, mobile])
+                    else:
+                        # Insert new entry
+                        cursor.execute("INSERT INTO interviewers (firstname, lastname, mobile, email, experience_years, skills, education, availability,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", [first_name, last_name, mobile, email, experience_years, skills_json_object, education_json, availability_json,user_id])
+                    cursor.close()
+            except Exception as e:
+                print(e)
+                return render(request, 'interviewer.html', {'error': str(e)})
+        return redirect('interviewer')
     
-    return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':parse_jobs})
+def scheduled_interview_(request):
+    if not request.session.get('user_id'):
+        return redirect('/')
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    fetched_interviews = []
+    print('Here')
+    try:
+        with connection.cursor() as cursor:
+            if user_role == 'interviewer':
+                # Query for interviews assigned to the interviewer
+                cursor.execute("SELECT id from interviewers where user_id=%s",[user_id])
+                interviewer_id = cursor.fetchone()[0] 
+                cursor.execute(
+                    "SELECT cid, jid, job_title, candidate_name, panel, descr, tm, dt "
+                    "FROM scheduled_interview WHERE pmember1 = %s OR pmember2 = %s OR pmember3 = %s "
+                    "ORDER BY dt DESC",
+                    [interviewer_id, interviewer_id, interviewer_id]
+                )
+            else:
+                cursor.execute("SELECT id FROM application WHERE user_id=%s", [user_id])
+                candidate_ids = cursor.fetchall()  # This will give a list of tuples [(id1,), (id2,), ...]
+
+                # If you have candidate IDs, proceed with fetching the interviews
+                if candidate_ids:
+                    # Extract just the IDs from the fetched tuples
+                    candidate_ids_list = [candidate_id[0] for candidate_id in candidate_ids]
+
+                    # Query for interviews assigned to these candidate IDs
+                    cursor.execute(
+                        """
+                        SELECT cid, jid, job_title, candidate_name, panel, descr, tm, dt
+                        FROM scheduled_interview
+                        WHERE cid IN %s
+                        ORDER BY dt DESC
+                        """, 
+                        [tuple(candidate_ids_list)]  # Pass the list as a tuple for the IN query
+                    )
 
 
+            interviews = cursor.fetchall()
+            for interview in interviews:
+                interview_dict = {
+                    'cid': interview[0],
+                    'jid': interview[1],
+                    'job_title': interview[2],
+                    'candidate_name': interview[3],
+                    'panel': interview[4],
+                    'descr': interview[5],
+                    'time': interview[6],
+                    'date': interview[7],
+                }
+                fetched_interviews.append(interview_dict)
+
+    except Exception as e:
+        print("Error fetching scheduled interviews:", e)
+        fetched_interviews = []
+    print(fetched_interviews)
+    # Render the appropriate template based on user role, passing fetched interviews
+    if user_role == 'interviewer':
+        return render(request, 'interviewer_scheduled_interview.html', {'fetched_interviews': fetched_interviews})
+    else:
+        return render(request, 'candidate_scheduled_interview.html', {'fetched_interviews': fetched_interviews})
+def get_job_details(request, job_id):
+    # print(job_id)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM jobs WHERE job_ID=%s", [job_id])
+            job_details = list(cursor.fetchone())
+            # print(job_details)
+            cursor.close()
+            job_data={
+                'Job_ID': job_details[0],
+                'Job_Title': job_details[1],
+                'Job_Location': job_details[2],
+                'Job_Description': job_details[3],
+                'Job_Requirements': json.loads(job_details[4]),
+                'Job_Status': job_details[6],
+                'Company_Name':job_details[7],
+            }
+    except Exception as e:
+        job_data={}
+        print(e)
+    return JsonResponse(job_data)
 
 def find_common_time_slot(availability_list, required_duration=1):
     """
@@ -227,87 +652,11 @@ def schedule_interview(maal):
         print(f"Error: {e}")
     finally:
         cursor.close()
-        
-
-def submit_application(request):
-    if request.method == 'POST':
-        job_id = request.POST.get('job_id')
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        mobile = request.POST.get('mobile')
-        email = request.POST.get('email')
-        experience_years = request.POST.get('experience_years')
-        resume = request.FILES.get('resume')
-        # Handling resume upload
-        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-        filename = fs.save(resume.name, resume)
-        pdf_path = fs.path(filename)
-        print(pdf_path)
-        # Process resume using Emsi API
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        auth_url = "https://auth.emsicloud.com/connect/token"
-        payload = {
-            "client_id": "39emm9hnhgnzvhfd",
-            "client_secret": "1oW72wzJ",
-            "grant_type": "client_credentials",
-            "scope": "emsi_open"
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(auth_url, data=payload, headers=headers)
-        access_token = ''
-
-        if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get('access_token')
-        
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
-
-        resume_text = extract_text_from_pdf(pdf_path).lower()
-        payload = {
-            "text": resume_text,
-            "confidenceThreshold": 0.8
-        }
-
-        response = requests.request("POST", url, json=payload, headers=headers)
-        skills = response.json().get('data', [])
-        skills_json = []
-
-        for skill in skills:
-            skill_name = skill['skill']['name']
-            skills_json.append(skill_name)
-
-        # Convert list to JSON
-        skills_json_object = json.dumps(skills_json)
-        
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-            print(f"Temporary file {pdf_path} deleted.")
-        inserted_id = -1
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills) VALUES (%s, %s, %s, %s, %s, %s, %s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object])
-                cursor.execute("SELECT LAST_INSERT_ID()")
-                inserted_id = cursor.fetchone()[0]
-                cursor.close()
-        except Exception as e:
-            print(e)
-            return render(request, 'candidate.html',  {'error': str(e)}) 
-        
-        # code to populate scheduled_interview
-        schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
-
-        return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':parse_jobs})
-
-def interviewer(request):
-    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
-        return redirect('/')
-    user_id = request.session.get('user_id')
+    
+def parse_jobs():
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM jobs where Added_By= %s",[user_id])
+            cursor.execute("SELECT * FROM jobs")
             jobs = list(cursor.fetchall())
         jobs_f=[]
         # print(type(jobs[0]))
@@ -317,148 +666,48 @@ def interviewer(request):
                 'Job_Title': job[1],
                 'Job_Location': job[2],
                 'Job_Description': job[3],
-                'Job_Requirements': job[4][1:][:-1].split(','),
-                'Job_Status': job[6]
+                'Job_Requirements': job[4][1:][:-1].split(',')
             }
             # print(jobs_dict['Job_Requirements'])
             jobs_f.append(jobs_dict)
-            # print(jobs_f)
     except:
         jobs_f=[]
-    return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
-
-def logout_view(request):
-    request.session.flush()  # Clear the session data
-    return redirect('/')  # Redirect to homepage after logout
-
-
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    doc.close()
-    return text
-
-def addJob(request):
-    job_ID = request.POST['job_ID']
-    job_title = request.POST['job_title']
-    location = request.POST['location']
-    descr = request.POST['desc']
-    requirements = request.POST.getlist('requirement')
-    requirements_json = json.dumps(requirements)
-    Added_By=request.session.get('user_id')
+    return jobs_f
+def fetch_interview_details(request, cid, jid):
+    print('ok')
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) FROM jobs WHERE job_ID=%s", ['job_ID'])
-            exists = cursor.fetchone()[0]
-            if exists:
-                return render(request,'interviewer.html',{'error':"This Job ID already exists"})
-            cursor.execute("INSERT INTO jobs VALUES (%s, %s, %s, %s, %s, %s,True)", [job_ID, job_title, location, descr, requirements_json,Added_By])
+            # Fetch interview details using cid and jid
+            cursor.execute("""
+                SELECT 
+                    cid, jid, job_title, candidate_name, pmember1, pmember2, pmember3, panel, 
+                    descr, tm, dt 
+                FROM scheduled_interview 
+                WHERE cid = %s AND jid = %s
+            """, [cid, jid])
+            interview_details = cursor.fetchone()
             cursor.close()
+
+            # Ensure that interview exists in the database
+            if interview_details:
+                interview_data = {
+                    'cid': interview_details[0],
+                    'jid': interview_details[1],
+                    'job_title': interview_details[2],
+                    'candidate_name': interview_details[3],
+                    'pmember1': interview_details[4],
+                    'pmember2': interview_details[5],
+                    'pmember3': interview_details[6],
+                    'panel': interview_details[7],
+                    'descr': interview_details[8],
+                    'tm': interview_details[9],
+                    'dt': interview_details[10]
+                }
+            else:
+                interview_data = {}
+
     except Exception as e:
-            return render(request, 'interviewer.html',  {'error': str(e)}) 
-    return redirect('interviewer')
-
-def interviewer_info(request):
-    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
-        return redirect('/')
-    interviewer = {
-        'firstname': request.session.get('firstname'),
-        'lastname': request.session.get('lastname'),
-        'mobile': request.session.get('mobile'),
-        'email': request.session.get('email'),
-    }
-    return render(request,'interviewer_info.html',{'interviewer':interviewer})
-
-def update_info(request):
-    # Handle form submission
-    if request.method == "POST":
-        # Get form data
-        first_name = request.POST.get('firstname')
-        last_name = request.POST.get('lastname')
-        experience_years = request.POST.get('experience_years')
-        email = request.POST.get('email')
-        mobile = request.POST.get('phone')
-        availability_json = request.POST.get('availability_json')
-        education_json = request.POST.get('education_json')
-        
-        # Handling resume upload
-        resume = request.FILES.get('resume')
-        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-        filename = fs.save(resume.name, resume)
-        pdf_path = fs.path(filename)
-        
-        print(pdf_path)
-
-        # Process resume using Emsi API
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        auth_url = "https://auth.emsicloud.com/connect/token"
-        payload = {
-            "client_id": "39emm9hnhgnzvhfd",
-            "client_secret": "1oW72wzJ",
-            "grant_type": "client_credentials",
-            "scope": "emsi_open"
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(auth_url, data=payload, headers=headers)
-        access_token = ''
-
-        if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get('access_token')
-        
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
-
-        resume_text = extract_text_from_pdf(pdf_path).lower()
-        payload = {
-            "text": resume_text,
-            "confidenceThreshold": 0.8
-        }
-
-        response = requests.request("POST", url, json=payload, headers=headers)
-        skills = response.json().get('data', [])
-        skills_json = []
-
-        for skill in skills:
-            skill_name = skill['skill']['name']
-            skills_json.append(skill_name)
-
-        # Convert list to JSON
-        skills_json_object = json.dumps(skills_json)
-        
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-            print(f"Temporary file {pdf_path} deleted.")
-        
-        try:
-            with connection.cursor() as cursor:
-                # Check if mobile number exists in the database
-                cursor.execute("SELECT COUNT(*) FROM interviewers WHERE mobile=%s", [mobile])
-                exists = cursor.fetchone()[0]
-                
-                if exists:
-                    # Update existing entry
-                    cursor.execute("UPDATE interviewers SET firstname=%s, lastname=%s, experience_years=%s, email=%s, skills=%s, education=%s, availability=%s, updated_at=NOW() WHERE mobile=%s", [first_name, last_name, experience_years, email, skills_json_object, education_json, availability_json, mobile])
-                else:
-                    # Insert new entry
-                    cursor.execute("INSERT INTO interviewers (firstname, lastname, mobile, email, experience_years, skills, education, availability) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", [first_name, last_name, mobile, email, experience_years, skills_json_object, education_json, availability_json])
-                cursor.close()
-        except Exception as e:
-            return render(request, 'interviewer.html', {'error': str(e)})
-        
-        return redirect('interviewer')
-def scheduled_interview(request):
-    if not request.session.get('user_id'):
-        return redirect('/')
-    elif(request.session.get('user_role')=='interviewer'):
-        return render(request,'interviewer_scheduled_interview.html')
-    else:
-        return render(request,'candidate_scheduled_interview.html')
-def add_job(request):
-    if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
-        return redirect('/')
-    return render(request,'Add_Jobs.html')
+        interview_data = {}
+        print(f"Error: {e}")
+    print(interview_data)
+    return JsonResponse(interview_data)

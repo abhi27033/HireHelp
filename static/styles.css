@@ -6,69 +6,6 @@
     margin-top: 80px;
 }
 
-.nav-container{
-    position: absolute; 
-    top: 0px; 
-    left: 0px; 
-    width: 100%; 
-    height: 56px; 
-    background: #FFFFFFFF; /* white */
-    border-radius: 0px; 
-    box-shadow: 0px 0px 1px #171a1f, 0px 0px 2px #171a1f; /* shadow-xs */
-}
-
-.nav-custom a:hover {
-    color:#8a63e8;
-}
-
-.nav-custom a {
-    position: relative;
-    display: inline-block;
-    text-decoration: none;
-}
-
-.nav-custom a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    left: 0;
-    bottom: -5px;
-    background-color: #8a63e8;
-    transition: width 0.5s ease-out;
-}
-
-.nav-custom a:hover::after {
-    width: 100%;
-}
-
-
-/* Header Menu */
-.header-menu {
-    position: absolute; 
-    top: -3px; 
-    left: 514px; 
-    width: 411px; 
-    height: 52px; 
-    display: flex; 
-    align-items: center;
-    font-size: 14px; 
-    line-height: 22px; 
-    font-weight: 400; 
-    opacity: 1; 
-}
-
-.header-menu .header-menu-item {
-    padding: 15px 12px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    color: #565E6CFF; /* neutral-600 */
-    border-radius: 6px; /* border-m */
-    cursor: pointer; 
-    white-space: nowrap; 
-  }
-
 /* General layout for larger screens */
 .flex-container {
     display: flex;
@@ -76,7 +13,6 @@
     width: 100%;
     height: 100vh; /* Optional: to take full screen height */
 }
-
 
 @media only screen and (max-width: 1050px) {
     .container{
@@ -86,6 +22,7 @@
         flex-direction: column;
     }
 }
+
 @media only screen and (max-width: 700px) {
     .container{
         min-height: 380px !important;

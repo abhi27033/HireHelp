@@ -1,0 +1,42 @@
+.glass-overlay {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+
+.inp input {
+    width: 100%;
+    border: 0;
+    font-family: inherit;
+    padding: 0;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 500;
+    background: none;
+    border-radius: 0;
+    color: #235cd7;
+    background-color: white;
+    transition: all .15s ease;
+}
+
+.inp input:focus {
+    outline: none;
+}
+.inp select{
+    color: #9098A9;
+}
+.inp input::placeholder {
+    color: #9098A9;
+}
+
+.back-purp{
+    background-color: #8a63e8;
+}
+/*color-pallete: #8a63e8, #5c57de, white, black*/
+/* button.custom-btn {
+    color:white;
+    background-color: #5c57de !important;
+}
+button.custom-btn:hover {
+    background-color: #8a63e8 !important;
+} */
