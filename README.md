@@ -44,6 +44,8 @@ CREATE TABLE interviewers (
     availability JSON, -- JSON column for storing availability details
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    user_id int,
+    FOREIGN KEY (user_id) REFERENCES user(sid)
 );
 
 CREATE TABLE candidates (
@@ -67,6 +69,8 @@ CREATE TABLE application (
     experience_years INT NOT NULL, -- Store experience in years
     skills JSON, -- JSON column for storing skills
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp of creation
+    user_id INT,
+    FOREIGN KEY (user_id) REFERENCES user(sid),
     PRIMARY KEY (jid,mobile)
 );
 
