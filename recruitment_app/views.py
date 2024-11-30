@@ -10,7 +10,16 @@ import urllib
 from django.http import JsonResponse
 from .mlmodel import mlscore
 from datetime import datetime, timedelta
+import google.generativeai as genai
+import re
+from django.http import JsonResponse
+from django.conf import settings
+
+API_KEY=settings.API_KEY
+
+
 def index(request):
+    print(API_KEY)
     # Clear the session data
     request.session.flush()
     return render(request, 'index.html')
@@ -711,3 +720,170 @@ def fetch_interview_details(request, cid, jid):
         print(f"Error: {e}")
     print(interview_data)
     return JsonResponse(interview_data)
+
+
+# Configure Google GenAI
+genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+def generate_questions(request):
+    # Only handle POST requests
+    if request.method == 'POST':
+
+        data = json.loads(request.body)
+        job_title = data.get('jobTitle', '')
+        job_description = data.get('jobDescription', '')
+        job_requirements = data.get('jobRequirements', '')
+        
+        # If any required field is missing, return an error
+        if not job_title or not job_description or not job_requirements:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        # Prepare the prompt for generating interview questions
+        prompt = f"Generate 5 interview questions based on the following Job Title: {job_title}, Job Description: {job_description}, and Requirements: {job_requirements}. Write $ before start and end of questions and no need to number them."
+
+        # Generate questions using Google GenAI
+        response = model.generate_content(prompt)
+
+        # Extract questions delimited by $
+        questions = re.findall(r'\$(.*?)\$', response.text, re.DOTALL)
+        questions = [q.strip() for q in questions]
+
+        # Return the questions as JSON response
+        return JsonResponse({"questions": questions})
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def evaluate_answers(request):
+    if request.method == 'POST':
+        # Get data from POST request
+        data = json.loads(request.body)
+
+        questions = data.get('questions')
+        answers = data.get('answers')
+
+        if not questions or not answers:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        # Parse JSON data
+        questions = json.loads(questions)
+        answers = json.loads(answers)
+         
+        print(questions)
+        # Prepare the prompt for evaluation
+        prompt = (
+            f"Evaluate the following candidate answers for the given questions:\n\n"
+            f"Questions and Answers:\n"
+        )
+        for i, (question, answer) in enumerate(zip(questions, answers), start=1):
+            prompt += f"Q{i}: {question}\nA{i}: {answer}\n"
+
+        prompt += "\nProvide a score out of 100 based on the relevance and quality of the answers. Write in format for example score: 80"
+
+        # Call Gemini API for scoring
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+
+        # Extract the score (assume the score is mentioned clearly in the response)
+        score_match = re.search(r'\bscore\b.*?(\d{1,3})', response.text, re.IGNORECASE)
+        score = int(score_match.group(1)) if score_match else None
+
+        if score is not None:
+            return JsonResponse({"score": score})
+        else:
+            return JsonResponse({'error': 'Unable to determine score'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def resume_score(request):
+    if request.method == 'POST':
+        # Handling resume upload
+        resume = request.FILES.get('resume')
+        job_title = request.POST.get('job_title')
+        job_description = request.POST.get('job_description')
+        job_requirements = request.POST.get('job_requirements')
+        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+
+        if not job_title or not job_description or not job_requirements:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+
+        filename = fs.save(resume.name, resume)
+        pdf_path = fs.path(filename)
+        
+        print(pdf_path)
+        # Process resume using Emsi API
+        url = "https://emsiservices.com/skills/versions/latest/extract"
+        auth_url = "https://auth.emsicloud.com/connect/token"
+        payload = {
+            "client_id": "39emm9hnhgnzvhfd",
+            "client_secret": "1oW72wzJ",
+            "grant_type": "client_credentials",
+            "scope": "emsi_open"
+        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        response = requests.post(auth_url, data=payload, headers=headers)
+        access_token = ''
+
+        if response.status_code == 200:
+            response_data = response.json()
+            access_token = response_data.get('access_token')
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        resume_text = extract_text_from_pdf(pdf_path).lower()
+        payload = {
+            "text": resume_text,
+            "confidenceThreshold": 0.8
+        }
+
+        response = requests.request("POST", url, json=payload, headers=headers)
+        skills = response.json().get('data', [])
+        skills_json = []
+
+
+        for skill in skills:
+            skill_name = skill['skill']['name']
+            skills_json.append(skill_name)
+                
+
+        
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+            print(f"Temporary file {pdf_path} deleted.")
+
+        # Convert the skill list to a comma-separated string
+        skills_string = ', '.join(skills_json)
+
+        # Prepare the prompt for the Gemini API
+        prompt = f"""
+        A candidate has applied for the job titled '{job_title}'. 
+        The job description is as follows: {job_description}. 
+        The job requires the following skills: {job_requirements}. 
+
+        The candidate's resume contains the following skills: {skills_string}.
+
+        Based on the overlap and relevance of the candidate's skills with the job requirements and description, 
+        provide a score for the candidate out of 100, where 100 indicates a perfect match. 
+
+        Write the score as follows: "Score: <value>".
+        """
+
+        # Call the Gemini API
+        response = model.generate_content(prompt)
+
+        # Extract the score using regex
+        import re
+        score_match = re.search(r'\bscore\b.*?(\d{1,3})', response.text, re.IGNORECASE)
+        score = int(score_match.group(1)) if score_match else None
+        if score is not None:
+            return JsonResponse({"score": score})
+        else:
+            return JsonResponse({'error': 'Unable to determine score'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
