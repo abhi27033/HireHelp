@@ -25,11 +25,11 @@ CREATE TABLE jobs (
     descr TEXT,
     requirements TEXT,
     Added_By INT,
+    status boolean,
     company_name varchar(200),
     date_of_posting date,
     pay decimal,
-    FOREIGN KEY (Added_By) REFERENCES user(sid),
-    status boolean
+    FOREIGN KEY (Added_By) REFERENCES user(sid)
 );
 
 CREATE TABLE interviewers (
