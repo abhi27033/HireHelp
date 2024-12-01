@@ -48,6 +48,7 @@ async function apply(button) {
         console.log('Score 1:', score1);
         const score2 = await populateResume(jobTitle,jobDescription,jobRequirements);
         console.log('Score 2:', score2);
+        displayResult(score1,score2);
 
     } else {
         console.error('Error:', response.statusText);
@@ -166,6 +167,102 @@ async function populateResume(jobTitle, jobDescription, jobRequirements) {
             });
         });
     });
+}
+
+function displayResult(score1,score2){
+    const resume = document.getElementsByClassName('resume')[0];
+    const result = document.getElementsByClassName('quizResult')[0];
+    resume.classList.add('hidden');
+    result.classList.remove('hidden');
+
+    //meter design
+    for(let i=0;i<2;i++){
+        const gaugeCanvas = document.getElementsByClassName('gaugeChart')[i].getContext('2d');
+        const needleCanvas = document.getElementsByClassName('needleCanvas')[i];
+        const needleCtx = needleCanvas.getContext('2d');
+    
+        // Ensure proper canvas size
+        needleCanvas.width = 400;
+        needleCanvas.height = 400;
+    
+        const RADIUS = 130; // Radius of the gauge
+        const CENTER_X = needleCanvas.width / 2;
+        const CENTER_Y = needleCanvas.height / 2 + 20;
+    
+        // Gauge Chart Data
+        const gaugeData = {
+        datasets: [{
+            data: [25, 25, 25, 25], // Gauge sections
+            backgroundColor: ['red', 'orange', 'yellow', 'green'],
+            borderWidth: 20,
+            cutout: '88%',
+            rotation: -135, // Start angle
+            circumference: 270, // Covers 270 degrees
+        }]
+        };
+    
+        // Gauge Chart Options
+        const gaugeOptions = {
+        responsive: true,
+        plugins: {
+            tooltip: { enabled: false },
+            legend: { display: false }
+        },
+        };
+    
+        // Initialize Gauge Chart
+        const gaugeChart = new Chart(gaugeCanvas, {
+        type: 'doughnut',
+        data: gaugeData,
+        options: gaugeOptions
+        });
+    
+    
+        function drawNeedle(value) {
+        const angle = ((value / 100) * 270 - 225) * (Math.PI / 180); 
+        const needleLength = RADIUS; 
+    
+    
+        needleCtx.clearRect(0, 0, needleCanvas.width, needleCanvas.height);
+    
+    
+    
+        needleCtx.beginPath();
+        needleCtx.moveTo(CENTER_X, CENTER_Y); // Start at center
+        needleCtx.lineTo(
+            CENTER_X + needleLength * Math.cos(angle), // X endpoint
+            CENTER_Y + needleLength * Math.sin(angle)  // Y endpoint
+        );
+        needleCtx.strokeStyle = '#FF0000'; 
+        needleCtx.lineWidth = 3;
+        needleCtx.stroke();
+    
+    
+        needleCtx.beginPath();
+        needleCtx.arc(CENTER_X, CENTER_Y, 6, 0, 2 * Math.PI);
+        needleCtx.fillStyle = '#FF0000';
+        needleCtx.fill();
+        }
+    
+    
+        function updateGauge(value) {
+        gaugeChart.update(); 
+        drawNeedle(value); 
+        }
+    
+    
+        let currentValue = -1;
+        const targetValue = 100; 
+    
+        const interval = setInterval(() => {
+        if (currentValue >= targetValue) {
+            clearInterval(interval);
+        } else {
+            currentValue += 1;
+            updateGauge(currentValue);
+        }
+        }, 30);
+    }
 }
 
 

@@ -19,7 +19,6 @@ API_KEY=settings.API_KEY
 
 
 def index(request):
-    print(API_KEY)
     # Clear the session data
     request.session.flush()
     return render(request, 'index.html')
