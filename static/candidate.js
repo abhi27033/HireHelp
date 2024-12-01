@@ -174,13 +174,14 @@ function displayResult(score1,score2){
     const result = document.getElementsByClassName('quizResult')[0];
     resume.classList.add('hidden');
     result.classList.remove('hidden');
-
+    let score = [score1,score2];
     //meter design
     for(let i=0;i<2;i++){
         const gaugeCanvas = document.getElementsByClassName('gaugeChart')[i].getContext('2d');
         const needleCanvas = document.getElementsByClassName('needleCanvas')[i];
         const needleCtx = needleCanvas.getContext('2d');
-    
+        
+
         // Ensure proper canvas size
         needleCanvas.width = 400;
         needleCanvas.height = 400;
@@ -252,13 +253,27 @@ function displayResult(score1,score2){
     
     
         let currentValue = -1;
-        const targetValue = 100; 
-    
+        const targetValue = score[i];
+        // console.log(score[i]); 
         const interval = setInterval(() => {
         if (currentValue >= targetValue) {
+            // console.log('OK');
             clearInterval(interval);
         } else {
             currentValue += 1;
+            if(currentValue>=0 && currentValue<=25){
+                document.getElementById('score'+(i+1)).classList.add('red');
+            }else if(currentValue>25 && currentValue<=50){
+                document.getElementById('score'+(i+1)).classList.remove('red');
+                document.getElementById('score'+(i+1)).classList.add('orange');
+            }else if(currentValue>50 && currentValue<=75){
+                document.getElementById('score'+(i+1)).classList.remove('orange');
+                document.getElementById('score'+(i+1)).classList.add('yellow');
+            }else{
+                document.getElementById('score'+(i+1)).classList.remove('yellow');
+                document.getElementById('score'+(i+1)).classList.add('green');
+            }
+            document.getElementById('score'+(i+1)).innerText = currentValue;
             updateGauge(currentValue);
         }
         }, 30);

@@ -43,7 +43,7 @@ CREATE TABLE interviewers (
     education JSON, -- JSON column for storing education details
     availability JSON, -- JSON column for storing availability details
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     user_id int,
     FOREIGN KEY (user_id) REFERENCES user(sid)
 );

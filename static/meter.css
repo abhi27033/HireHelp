@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Orbitron:wght@400..900&family=Oswald:wght@200..700&display=swap');
 .scoreMeter1,.scoreMeter2 {
     display: flex;
     justify-content: center;
@@ -32,7 +33,7 @@ canvas.needleCanvas {
 .score {
     position: absolute;
     width: 100px;
-    font-weight: bold;
+    font-family: "Orbitron", sans-serif;
     font-size: 50px;
     text-align: center; /* Corrected the typo */
     transform: translate(-50%, -50%); /* Centers the label at the position */
@@ -58,4 +59,16 @@ canvas.needleCanvas {
     top: 260px; 
     left: 450px;
     color:green;
+}
+.red{
+    color:red;
+}
+.yellow{
+    color:yellow;
+}
+.green{
+    color:green;
+}
+.orange{
+    color:orange;
 }
