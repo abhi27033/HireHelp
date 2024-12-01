@@ -37,21 +37,21 @@
                         <!-- Step 1 -->
                         <div class="flex flex-col items-center">
                             <div class="step-circle">1</div>
-                            <span class="mt-2 text-sm">Step 1</span>
+                            <span class="mt-2 text-sm">Screening Test</span>
                         </div>
-                        <div class="step-line step-line-active"></div>
+                        <div class="step-line mb-4"></div>
 
                         <!-- Step 2 -->
                         <div class="flex flex-col items-center">
                             <div class="step-circle">2</div>
-                            <span class="mt-2 text-sm">Step 2</span>
+                            <span class="mt-2 text-sm">Upload Details</span>
                         </div>
-                        <div class="step-line"></div>
+                        <div class="step-line mb-4"></div>
 
                         <!-- Step 3 -->
                         <div class="flex flex-col items-center">
                             <div class="step-circle">3</div>
-                            <span class="mt-2 text-sm">Step 3</span>
+                            <span class="mt-2 text-sm">Apply If Fit</span>
                         </div>
                     </div>
                     <div class='stepContents'>
@@ -68,11 +68,11 @@
                                         <div class="flex mb-2">
                                             <div class="w-1/2 pr-2">
                                                 <label for="firstname" class="blocktext-sm font-medium text-gray-700">First Name</label>
-                                                <input type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
+                                                <input id='firstname' type="text" name="firstname" value="{{ candidate.firstname }}" placeholder="First Name" class="p-2 border rounded w-full" required />
                                             </div>
                                             <div class="w-1/2 pl-2">
                                                 <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                                <input type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
+                                                <input id='lastname' type="text" name="lastname" value="{{ candidate.lastname }}" placeholder="Last Name" class="p-2 border rounded w-full" required />
                                             </div>
                                         </div>
                                         <div class="flex mb-2">
@@ -86,7 +86,7 @@
                                             </div>
                                         </div>
                                         <p class="text-gray-700"><b>Experience (Years):</b></p>
-                                        <input type="number" name="experience_years" placeholder="Experience Years" class="mb-2 p-2 border rounded w-full" required />
+                                        <input id='exp_year' type="number" name="experience_years" placeholder="Experience Years" class="mb-2 p-2 border rounded w-full" required />
 
                                         <p class="text-gray-700"><b>Upload Resume (PDF):</b></p>
                                         <input type="file" name="resume" id='resumeInput' accept=".pdf" class="mb-2 p-2 border rounded w-full" required />
@@ -134,6 +134,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <div id="result">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,6 +145,9 @@
 </div>
 
 <script>
+    var csrfToken = '{{ csrf_token }}';
+    var submitApplicationUrl = "{% url 'submit_application' %}";
+    
     document.querySelectorAll('.rounded-border').forEach(div => {
         div.addEventListener('click', async function() {
             const jobId = this.getAttribute('data-job-id');
