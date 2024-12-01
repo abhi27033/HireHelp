@@ -1,0 +1,19 @@
+.step-circle {
+    width: 30px;
+    height: 30px;
+    background-color: #4F46E5; /* Indigo color */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+.step-line {
+    flex-grow: 1;
+    height: 4px;
+    background-color: #E5E7EB; /* Gray color */
+}
+.step-line-active {
+    background-color: #4F46E5; /* Indigo color */
+}
