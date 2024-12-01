@@ -4,8 +4,10 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <link rel="stylesheet" href="..\static\interviewer.css" />
 <link rel="stylesheet" href="..\static\stepwiseNav.css" />
+<link rel="stylesheet" href="..\static\meter.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 <script src="../static/candidate.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 {% block title %}candidate {% endblock %}
 {% block content %}
@@ -94,7 +96,37 @@
                                 </div>
                             </div>
                         </div>
-                        <div class='quizResult hidden'></div>
+                        <div class='quizResult hidden'>
+                            <div class="bg-white w-full p-2 flex flex-col">
+                                <div>
+                                    <h2 class="text-2xl font-semibold text-gray-900">Score Generated</h2>
+                                </div>
+                                <div class="flex flex-col w-full">
+                                    <div class="scoreMeter1 flex-1">
+                                        <div class="gaugeContainer">
+                                            <canvas class="gaugeChart"></canvas>
+                                            <canvas class="needleCanvas"></canvas>
+                                            <div class="label label0">Undesirable score</div>
+                                            <div class="label label25">Moderate Fit</div>
+                                            <div class="label label50">Strong <br> Fit</div>
+                                            <div class="label label75">Exceptional <br> Fit</div>
+                                            <div class="score">65</div>
+                                        </div>
+                                    </div>
+                                    <div class="scoreMeter2 flex-1">
+                                        <div class="gaugeContainer">
+                                            <canvas class="gaugeChart"></canvas>
+                                            <canvas class="needleCanvas"></canvas>
+                                            <div class="label label0">Undesirable score</div>
+                                            <div class="label label25">Moderate Fit</div>
+                                            <div class="label label50">Strong <br> Fit</div>
+                                            <div class="label label75">Exceptional <br> Fit</div>
+                                            <div class="score">45</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

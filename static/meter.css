@@ -1,0 +1,61 @@
+.scoreMeter1,.scoreMeter2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.gaugeContainer {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+canvas.gaugeChart {
+    position: absolute;
+    z-index: 1;
+}
+canvas.needleCanvas {
+    position: absolute;
+    z-index: 2;
+}
+.label {
+    position: absolute;
+    height: 50px;
+    width: 100px;
+    font-weight: bold;
+    font-size: 20px;
+    text-align: center; /* Corrected the typo */
+    transform: translate(-50%, -50%); /* Centers the label at the position */
+    top: 50%; /* Position it in the center of its container */
+    left: 50%; /* Horizontally center it */
+}
+.score {
+    position: absolute;
+    width: 100px;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center; /* Corrected the typo */
+    transform: translate(-50%, -50%); /* Centers the label at the position */
+    top: 95%; /* Position it in the center of its container */
+    left: 50%; /* Horizontally center it */
+}
+.label0 {
+    top: 260px; 
+    left: -70px; 
+    color: red;
+}
+.label25 { 
+    top: 45px; 
+    left: 45px; 
+    color: orange;
+}
+.label50 { 
+    top: 45px; 
+    left: 365px; 
+    color: yellow;
+}
+.label75 { 
+    top: 260px; 
+    left: 450px;
+    color:green;
+}
