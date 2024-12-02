@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(os.path.join(BASE_DIR, r'HireHelp\secrets.env'))
+load_dotenv(os.path.join(BASE_DIR, r'HireHelp/secrets.env'))
 API_KEY = os.getenv('API_KEY')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'hireauth',
         'USER': 'root',
-        'PASSWORD': 'aryan',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '3306',
     }

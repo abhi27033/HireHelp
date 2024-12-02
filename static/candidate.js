@@ -8,11 +8,13 @@ function getCSRFToken() {
     }
     return null;
 }
+
 async function apply(button) {
     const jobId = button.getAttribute('data-job-id'); 
     const jobTitle = button.getAttribute('data-job-title');
     const jobDescription = button.getAttribute('data-job-description');
     const jobRequirements = button.getAttribute('data-job-requirements');
+    const stepLine=document.querySelectorAll('.step-line'); 
 
     const payload = {
         jobTitle: jobTitle,
@@ -46,9 +48,12 @@ async function apply(button) {
         // Calling populateQuiz and logging the result
         const score1 = await populateQuiz(questions);
         console.log('Score 1:', score1);
-        const score2 = await populateResume(jobTitle,jobDescription,jobRequirements);
+        stepLine[0].classList.add('.step-line-active');
+        const score2 = await populateResume(jobId,jobTitle,jobDescription,jobRequirements);
+        stepLine[0].classList.remove('.step-line-active');
+        stepLine[1].classList.add('.step-line-active');
         console.log('Score 2:', score2);
-        displayResult(score1,score2);
+        displayResult(score1,score2,jobId);
 
     } else {
         console.error('Error:', response.statusText);
@@ -131,7 +136,7 @@ async function populateQuiz(questions) {
     });
 }
 
-async function populateResume(jobTitle, jobDescription, jobRequirements) {
+async function populateResume(jobId, jobTitle, jobDescription, jobRequirements) {
     const quiz = document.getElementsByClassName('quiz')[0];
     const resume = document.getElementsByClassName('resume')[0];
     quiz.classList.add('hidden');
@@ -142,9 +147,17 @@ async function populateResume(jobTitle, jobDescription, jobRequirements) {
         form.addEventListener('submit', function (event) {
             event.preventDefault();
 
+            const exp=document.getElementById('exp_year').value;
+            const firstname=document.getElementById('firstname').value;
+            const lastname=document.getElementById('lastname').value;
+
             const formData = new FormData();
             formData.append('resume', document.getElementById('resumeInput').files[0]); // Assuming the file input has id="resumeInput"
+            formData.append('job_Id', jobId);
             formData.append('job_title', jobTitle);
+            formData.append('firstname', firstname);
+            formData.append('lastname', lastname);
+            formData.append('exp', exp);
             formData.append('job_description', jobDescription);
             formData.append('job_requirements', jobRequirements);
 
@@ -169,7 +182,7 @@ async function populateResume(jobTitle, jobDescription, jobRequirements) {
     });
 }
 
-function displayResult(score1,score2){
+function displayResult(score1,score2,jobId){
     const resume = document.getElementsByClassName('resume')[0];
     const result = document.getElementsByClassName('quizResult')[0];
     resume.classList.add('hidden');
@@ -277,6 +290,25 @@ function displayResult(score1,score2){
             updateGauge(currentValue);
         }
         }, 30);
+    }
+    
+    if(score1>=50 && score2>=50){
+        document.getElementById('result').innerHTML=`
+            <p class="text-gray-700 mt-2 pb-2"> Congratulations! You Can Apply for this job.</p>
+            <form action='${submitApplicationUrl}' method='POST'>
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <input type="hidden" name="jobId" value="${jobId}">
+            <button type='submit'> Apply </button>
+            </form>
+            <button onclick="window.location.href='candidate'">Go Back</button>
+        `;
+
+    }else{
+        document.getElementById('result').innerHTML=`
+            <p class="text-gray-700 mt-2 pb-2"> Sorry! You are not eligible to apply on this job.
+            But Don't worry you can try applying to any other job.</p>
+            <button onclick="window.location.href='candidate'">Go Back</button>
+        `;
     }
 }
 
