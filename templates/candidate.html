@@ -99,7 +99,7 @@
                         <div class='quizResult hidden'>
                             <div class="bg-white w-full p-2 flex flex-col">
                                 <div>
-                                    <h2 class="text-2xl font-semibold text-gray-900">Score Generated</h2>
+                                    <h2 class="text-2xl font-semibold text-gray-900">Score Generated(Check Your Result At the bottom)</h2>
                                 </div>
                                 <div class="flex flex-col w-full">
                                     <div>
@@ -133,6 +133,9 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div id="result">
+                                
                             </div>
                         </div>
                     </div>
@@ -258,6 +261,7 @@
             }
         });
     });
-     
+    var csrfToken = '{{ csrf_token }}';
+    var submitApplicationUrl = "{% url 'submit_application' %}";
 </script>
  {%endblock%}

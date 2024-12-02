@@ -335,7 +335,7 @@ def submit_application(request):
         
         # code to populate scheduled_interview
         schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
-
+        # print('OK')
         return redirect('candidate')
 
 def add_job(request):

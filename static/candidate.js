@@ -250,8 +250,7 @@ function displayResult(score1,score2){
         gaugeChart.update(); 
         drawNeedle(value); 
         }
-    
-    
+
         let currentValue = -1;
         const targetValue = score[i];
         // console.log(score[i]); 
@@ -278,8 +277,24 @@ function displayResult(score1,score2){
         }
         }, 30);
     }
-}
+    if(score1>=50 && score2>=50){
+        document.getElementById('result').innerHTML=`
+            <p class="text-gray-700 mt-2 pb-2"> Congratulations! You Can Apply for this job.</p>
+            <form action='${submitApplicationUrl}' method='POST'>
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <button type='submit'> Apply </button>
+            </form>
+            <button onclick="window.location.href='candidate'">Go Back</button>
 
+        `;
+    }else{
+        document.getElementById('result').innerHTML=`
+            <p class="text-gray-700 mt-2 pb-2"> Sorry! You are not eligible to apply on this job.
+            But Don't worry you can try applying to any other job.</p>
+            <button onclick="window.location.href='candidate'">Go Back</button>
+        `;
+    }
+}
 
 function closeModal() {
     document.getElementById('applicationModal').classList.add('hidden');
