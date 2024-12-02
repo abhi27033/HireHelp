@@ -194,6 +194,7 @@ def extract_text_from_pdf(pdf_path):
         text += page.get_text()
     doc.close()
     return text
+
 def submit_application(request):
     if request.method == 'POST':
         job_id = request.POST.get('job_id')
@@ -265,6 +266,8 @@ def submit_application(request):
         schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
 
         return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':parse_jobs})
+    
+
 def submit_application(request):
     if request.method == 'POST':
         user_id = request.session.get('user_id')
@@ -800,10 +803,15 @@ def resume_score(request):
     if request.method == 'POST':
         # Handling resume upload
         resume = request.FILES.get('resume')
+        job_Id = request.POST.get('job_Id')
+        exp = request.POST.get('exp')
+        first_name = request.POST.get('firstname')
+        last_name = request.POST.get('lastname')
         job_title = request.POST.get('job_title')
         job_description = request.POST.get('job_description')
         job_requirements = request.POST.get('job_requirements')
         fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+
 
         if not job_title or not job_description or not job_requirements:
             return JsonResponse({'error': 'Missing required fields'}, status=400)
