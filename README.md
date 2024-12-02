@@ -71,7 +71,7 @@ CREATE TABLE application (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp of creation
     user_id INT,
     FOREIGN KEY (user_id) REFERENCES user(sid),
-    PRIMARY KEY (jid,mobile)
+    PRIMARY KEY (jid,user_id)
 );
 
 CREATE TABLE scheduled_interview(
