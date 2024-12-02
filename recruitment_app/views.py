@@ -269,76 +269,76 @@ def submit_application(request):
     
 
 def submit_application(request):
-    if request.method == 'POST':
-        user_id = request.session.get('user_id')
-        job_id = request.POST.get('job_id')
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        mobile = request.POST.get('mobile')
-        email = request.POST.get('email')
-        experience_years = request.POST.get('experience_years')
-        resume = request.FILES.get('resume')
-        # Handling resume upload
-        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-        filename = fs.save(resume.name, resume)
-        pdf_path = fs.path(filename)
-        print(pdf_path)
-        # Process resume using Emsi API
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        auth_url = "https://auth.emsicloud.com/connect/token"
-        payload = {
-            "client_id": "39emm9hnhgnzvhfd",
-            "client_secret": "1oW72wzJ",
-            "grant_type": "client_credentials",
-            "scope": "emsi_open"
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(auth_url, data=payload, headers=headers)
-        access_token = ''
+    # if request.method == 'POST':
+    #     user_id = request.session.get('user_id')
+    #     job_id = request.POST.get('job_id')
+    #     firstname = request.POST.get('firstname')
+    #     lastname = request.POST.get('lastname')
+    #     mobile = request.POST.get('mobile')
+    #     email = request.POST.get('email')
+    #     experience_years = request.POST.get('experience_years')
+    #     resume = request.FILES.get('resume')
+    #     # Handling resume upload
+    #     fs = FileSystemStorage(location='/tmp')  # Store in temp directory
+    #     filename = fs.save(resume.name, resume)
+    #     pdf_path = fs.path(filename)
+    #     print(pdf_path)
+    #     # Process resume using Emsi API
+    #     url = "https://emsiservices.com/skills/versions/latest/extract"
+    #     auth_url = "https://auth.emsicloud.com/connect/token"
+    #     payload = {
+    #         "client_id": "39emm9hnhgnzvhfd",
+    #         "client_secret": "1oW72wzJ",
+    #         "grant_type": "client_credentials",
+    #         "scope": "emsi_open"
+    #     }
+    #     headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    #     response = requests.post(auth_url, data=payload, headers=headers)
+    #     access_token = ''
 
-        if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get('access_token')
+    #     if response.status_code == 200:
+    #         response_data = response.json()
+    #         access_token = response_data.get('access_token')
         
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
+    #     headers = {
+    #         "Authorization": f"Bearer {access_token}",
+    #         "Content-Type": "application/json"
+    #     }
 
-        resume_text = extract_text_from_pdf(pdf_path).lower()
-        payload = {
-            "text": resume_text,
-            "confidenceThreshold": 0.8
-        }
+    #     resume_text = extract_text_from_pdf(pdf_path).lower()
+    #     payload = {
+    #         "text": resume_text,
+    #         "confidenceThreshold": 0.8
+    #     }
 
-        response = requests.request("POST", url, json=payload, headers=headers)
-        skills = response.json().get('data', [])
-        skills_json = []
+    #     response = requests.request("POST", url, json=payload, headers=headers)
+    #     skills = response.json().get('data', [])
+    #     skills_json = []
 
-        for skill in skills:
-            skill_name = skill['skill']['name']
-            skills_json.append(skill_name)
+    #     for skill in skills:
+    #         skill_name = skill['skill']['name']
+    #         skills_json.append(skill_name)
 
-        # Convert list to JSON
-        skills_json_object = json.dumps(skills_json)
+    #     # Convert list to JSON
+    #     skills_json_object = json.dumps(skills_json)
         
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-            print(f"Temporary file {pdf_path} deleted.")
-        inserted_id = -1
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object,user_id])
-                cursor.execute("SELECT LAST_INSERT_ID()")
-                inserted_id = cursor.fetchone()[0]
-                cursor.close()
-        except Exception as e:
-            print(e)
-            return redirect('candidate') 
+    #     if os.path.exists(pdf_path):
+    #         os.remove(pdf_path)
+    #         print(f"Temporary file {pdf_path} deleted.")
+    #     inserted_id = -1
+    #     try:
+    #         with connection.cursor() as cursor:
+    #             cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object,user_id])
+    #             cursor.execute("SELECT LAST_INSERT_ID()")
+    #             inserted_id = cursor.fetchone()[0]
+    #             cursor.close()
+    #     except Exception as e:
+    #         print(e)
+    #         return redirect('candidate') 
         
-        # code to populate scheduled_interview
-        schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
-        # print('OK')
+    #     # code to populate scheduled_interview
+    #     schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
+    #     # print('OK')
         return redirect('candidate')
 
 def add_job(request):
