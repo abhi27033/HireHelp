@@ -69,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'recruitment_app.context_processors.get_notification',
             ],
         },
         'DIRS': [os.path.join(BASE_DIR,"templates")],
@@ -86,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'hireauth',
         'USER': 'root',
-        'PASSWORD': 'password',
+        'PASSWORD': 'aryan',
         'HOST': 'localhost',
         'PORT': '3306',
     }
