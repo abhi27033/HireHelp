@@ -76,6 +76,15 @@ CREATE TABLE scheduled_interview(
     tm VARCHAR(50) NOT NULL,
     dt VARCHAR(50) NOT NULL
 );
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(sid) ON DELETE CASCADE
+);
 ```
 
 ## This creates the database and now update the settings.py <br>
