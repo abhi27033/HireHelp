@@ -8,7 +8,7 @@
 <!-- Notification Bar -->
 <div class="bg-gray-100 flex items-center justify-center min-h-screen mt-16">
     {% if error %}
-        <div id="error-notification" class="fixed top-20 left-10">
+        <div id="notification" class="fixed top-20 left-10">
             <div class="relative flex items-center bg-white shadow-lg rounded-md py-3 px-6 max-w-md mx-auto">
                 <div class="flex flex-row items-center space-x-2">
                     <svg data-slot="icon" class='w-5 h-5' fill="none" stroke-width="1.5" stroke="red" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -113,7 +113,7 @@
         }
     });
     window.onload = function() {
-        const notification = document.getElementById('error-notification');
+        const notification = document.getElementById('notification');
         const closeButton = document.getElementById('closeNotification');
 
         closeButton.addEventListener('click', ()=>{

@@ -495,7 +495,6 @@ def generate_questions(request):
         # Extract questions delimited by $
         questions = re.findall(r'\$(.*?)\$', response.text, re.DOTALL)
         questions = [q.strip() for q in questions]
-        print(questions)
         # Return the questions as JSON response
         return JsonResponse({"questions": questions})
 
