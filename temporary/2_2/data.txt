@@ -1,0 +1,8 @@
+First Name: Atharva
+Last Name: Singh
+Experience: 1
+Job Title: SDE-1
+Job Description: As an SDE-1, you will be a key member of our development team, working on building and maintaining high-quality software solutions. You’ll have the opportunity to contribute to all stages of the software development lifecycle and grow your technical skills in a fast-paced, dynamic environment.
+Job Requirements: Stay up-to-date with the latest technologies, frameworks, and best practices in software development.,Work closely with cross-functional teams, including product managers, QA engineers, and DevOps, to deliver high-quality products.,Strong foundation in data structures, algorithms, and object-oriented programming.
+Mobile: 1234567890
+Email: athsingh@gmail.com

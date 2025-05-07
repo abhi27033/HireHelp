@@ -1,0 +1,9 @@
+First Name: Atharva
+Last Name: Singh
+Experience: 1
+Job Title: SDE-1
+Job Description: As an SDE-1, you will play a crucial role in developing and maintaining software systems that meet the needs of our growing user base. This is an entry-level role where you’ll gain hands-on experience in designing, coding, testing, and deploying software, with opportunities for professional growth.
+
+Job Requirements: Participate in peer code reviews to maintain high code quality and share knowledge.,Experience with frontend technologies (e.g., React, Angular) or backend frameworks (e.g., Node.js, Django).,Familiarity with cloud platforms (e.g., AWS, Azure, GCP). Exposure to CI/CD pipelines and automated testing frameworks.
+Mobile: 1234567890
+Email: athsingh@gmail.com

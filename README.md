@@ -48,17 +48,6 @@ CREATE TABLE interviewers (
     FOREIGN KEY (user_id) REFERENCES user(sid)
 );
 
-CREATE TABLE candidates (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    firstname VARCHAR(50) NOT NULL,
-    lastname VARCHAR(50) NOT NULL,
-    mobile VARCHAR(20) UNIQUE, -- Ensure mobile numbers are unique
-    email VARCHAR(100) UNIQUE, -- Ensure email addresses are unique
-    experience_years INT NOT NULL, -- Store experience in years
-    skills JSON, -- JSON column for storing skills
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp of creation
-);
-
 CREATE TABLE application (
     id INT AUTO_INCREMENT UNIQUE KEY,
     jid INT,
@@ -71,7 +60,7 @@ CREATE TABLE application (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp of creation
     user_id INT,
     FOREIGN KEY (user_id) REFERENCES user(sid),
-    PRIMARY KEY (jid,mobile)
+    PRIMARY KEY (jid,user_id)
 );
 
 CREATE TABLE scheduled_interview(

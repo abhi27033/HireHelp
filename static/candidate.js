@@ -8,6 +8,7 @@ function getCSRFToken() {
     }
     return null;
 }
+
 async function apply(button) {
     const jobId = button.getAttribute('data-job-id'); 
     const jobTitle = button.getAttribute('data-job-title');
@@ -52,7 +53,7 @@ async function apply(button) {
         stepLine[0].classList.remove('.step-line-active');
         stepLine[1].classList.add('.step-line-active');
         console.log('Score 2:', score2);
-        displayResult(score1,score2);
+        displayResult(score1,score2,jobId);
 
     } else {
         console.error('Error:', response.statusText);
@@ -181,7 +182,7 @@ async function populateResume(jobId, jobTitle, jobDescription, jobRequirements) 
     });
 }
 
-function displayResult(score1,score2){
+function displayResult(score1,score2,jobId){
     const resume = document.getElementsByClassName('resume')[0];
     const result = document.getElementsByClassName('quizResult')[0];
     resume.classList.add('hidden');
@@ -295,6 +296,7 @@ function displayResult(score1,score2){
             <h2 class="text-2xl font-semibold text-gray-900">Congratulations! You Can Apply for this job.</h2>
             <form action='${submitApplicationUrl}' method='POST' style="display: inline;">
                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <input type="hidden" name="jobId" value="${jobId}">
                 <button type="submit" class="mt-4 back-purp text-white px-4 py-2 rounded" style="display: inline-block; margin-right: 10px;">Apply</button>
             </form>
             <button onclick="window.location.href='candidate'" class="mt-4 back-purp text-white px-4 py-2 rounded" style="display: inline-block;">Go Back</button>

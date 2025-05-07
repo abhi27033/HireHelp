@@ -7,16 +7,19 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import logout
 import requests, fitz, os, json
 import urllib
+import shutil
 from django.http import JsonResponse
-from .mlmodel import mlscore
+import time,threading
+from .extract_textual_data import extract_data_from_txt
+from .resume_parser import parse_resume, extract_text_from_pdf
 from datetime import datetime, timedelta
 import google.generativeai as genai
 import re
 from django.http import JsonResponse
 from django.conf import settings
+from .interview_scheduler import schedule_interview
 
 API_KEY=settings.API_KEY
-
 
 def index(request):
     # Clear the session data
@@ -93,6 +96,7 @@ def candidate(request):
         'mobile': request.session.get('mobile'),
         'email': request.session.get('email'),
     }
+    user_id = request.session.get('user_id')
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT job_ID,job_title,location,company_name,pay,date_of_posting,status FROM jobs where status=true order by date_of_posting desc")
@@ -113,6 +117,21 @@ def candidate(request):
             jobs_f.append(jobs_dict)
     except:
         jobs_f=[]
+    # try:
+    #     noti=[]
+    #     with connection.cursor() as cursor:
+    #         cursor.execute("SELECT id,message,created_at from notifications where user_id=%s AND is_read=FALSE",[user_id])
+    #         noti_fetched = list(cursor.fetchall())
+    #     for i in noti_fetched:
+    #         noti_dict={
+    #             'Notification_ID':i[0],
+    #             'Message':i[1],
+    #             'Date':i[2]
+    #         }
+    #         noti.append(noti_dict)
+    #     print("Notifications ",noti)
+    # except:
+    #     noti = []
     return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':jobs_f})
 
 def interviewer(request):
@@ -124,7 +143,6 @@ def interviewer(request):
             cursor.execute("SELECT job_ID,job_title,location,company_name,pay,date_of_posting,status FROM jobs where Added_By= %s order by date_of_posting desc",[user_id])
             jobs = list(cursor.fetchall())
         jobs_f=[]
-        # print(type(jobs[0]))
         for job in jobs:
             # jobs_dict = {
             #     'Job_ID': job[0],
@@ -180,171 +198,76 @@ def interviewer(request):
     except Exception as e:
         jobs_f=[]
         # print(e)
+    # try:
+    #     noti=[]
+    #     with connection.cursor() as cursor:
+    #         cursor.execute("SELECT id,message,created_at from notifications where user_id=%s AND is_read=FALSE",[user_id])
+    #         noti_fetched = list(cursor.fetchall())
+    #     for i in noti_fetched:
+    #         noti_dict={
+    #             'Notification_ID':i[0],
+    #             'Message':i[1],
+    #             'Date':i[2]
+    #         }
+    #         noti.append(noti_dict)
+    #     print("Notifications ",noti)
+    # except:
+    #     print("Notifications ",noti)
+    #     noti = []
     return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
 
 def logout_view(request):
     request.session.flush()  # Clear the session data
     return redirect('/')  # Redirect to homepage after logout
 
-
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    doc.close()
-    return text
-
 def submit_application(request):
     if request.method == 'POST':
-        job_id = request.POST.get('job_id')
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        mobile = request.POST.get('mobile')
-        email = request.POST.get('email')
-        experience_years = request.POST.get('experience_years')
-        resume = request.FILES.get('resume')
-        # Handling resume upload
-        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-        filename = fs.save(resume.name, resume)
-        pdf_path = fs.path(filename)
-        print(pdf_path)
-        # Process resume using Emsi API
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        auth_url = "https://auth.emsicloud.com/connect/token"
-        payload = {
-            "client_id": "39emm9hnhgnzvhfd",
-            "client_secret": "1oW72wzJ",
-            "grant_type": "client_credentials",
-            "scope": "emsi_open"
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(auth_url, data=payload, headers=headers)
-        access_token = ''
-
-        if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get('access_token')
-        
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
-
-        resume_text = extract_text_from_pdf(pdf_path).lower()
-        payload = {
-            "text": resume_text,
-            "confidenceThreshold": 0.8
-        }
-
-        response = requests.request("POST", url, json=payload, headers=headers)
-        skills = response.json().get('data', [])
-        skills_json = []
-
-        for skill in skills:
-            skill_name = skill['skill']['name']
-            skills_json.append(skill_name)
-
+        user_id = request.session.get('user_id')
+        job_id = request.POST.get('jobId')
+        folder_name=f"{job_id}_{user_id}"
+        # Define the base directory for saving files
+        base_dir = os.path.join(os.getcwd(), 'temporary')
+        folder_path = os.path.join(base_dir, folder_name)
+        pdf_path = os.path.join(folder_path,'resume.pdf')
+        data_path = os.path.join(folder_path,'data.txt')
+        extracted_info=extract_data_from_txt(data_path)
+        # Check if extraction was successful
+        if 'error' in extracted_info:
+            print("Error extracting data:", extracted_info['error'])
+        else:
+            firstname = extracted_info['firstname']
+            lastname = extracted_info['lastname']
+            mobile = extracted_info['mobile']
+            email = extracted_info['email']
+            experience_years = extracted_info['experience_years']
+        # print(pdf_path)
+        skills_json=parse_resume(pdf_path)
         # Convert list to JSON
         skills_json_object = json.dumps(skills_json)
-        
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-            print(f"Temporary file {pdf_path} deleted.")
+
+        # if os.path.exists(folder_path):
+        #     shutil.rmtree(folder_path)
+        #     print(f"Temporary folder {folder_path} deleted.")
         inserted_id = -1
         try:
             with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills) VALUES (%s, %s, %s, %s, %s, %s, %s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object])
+                cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object,user_id])
                 cursor.execute("SELECT LAST_INSERT_ID()")
                 inserted_id = cursor.fetchone()[0]
                 cursor.close()
         except Exception as e:
             print(e)
-            return render(request, 'candidate.html',  {'error': str(e)}) 
-        
+            return redirect('candidate') 
+        task_id = datetime.now().strftime("%Y%m%d%H%M%S")
         # code to populate scheduled_interview
-        schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
-
-        return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':parse_jobs})
-    
-
-def submit_application(request):
-    # if request.method == 'POST':
-    #     user_id = request.session.get('user_id')
-    #     job_id = request.POST.get('job_id')
-    #     firstname = request.POST.get('firstname')
-    #     lastname = request.POST.get('lastname')
-    #     mobile = request.POST.get('mobile')
-    #     email = request.POST.get('email')
-    #     experience_years = request.POST.get('experience_years')
-    #     resume = request.FILES.get('resume')
-    #     # Handling resume upload
-    #     fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-    #     filename = fs.save(resume.name, resume)
-    #     pdf_path = fs.path(filename)
-    #     print(pdf_path)
-    #     # Process resume using Emsi API
-    #     url = "https://emsiservices.com/skills/versions/latest/extract"
-    #     auth_url = "https://auth.emsicloud.com/connect/token"
-    #     payload = {
-    #         "client_id": "39emm9hnhgnzvhfd",
-    #         "client_secret": "1oW72wzJ",
-    #         "grant_type": "client_credentials",
-    #         "scope": "emsi_open"
-    #     }
-    #     headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    #     response = requests.post(auth_url, data=payload, headers=headers)
-    #     access_token = ''
-
-    #     if response.status_code == 200:
-    #         response_data = response.json()
-    #         access_token = response_data.get('access_token')
-        
-    #     headers = {
-    #         "Authorization": f"Bearer {access_token}",
-    #         "Content-Type": "application/json"
-    #     }
-
-    #     resume_text = extract_text_from_pdf(pdf_path).lower()
-    #     payload = {
-    #         "text": resume_text,
-    #         "confidenceThreshold": 0.8
-    #     }
-
-    #     response = requests.request("POST", url, json=payload, headers=headers)
-    #     skills = response.json().get('data', [])
-    #     skills_json = []
-
-    #     for skill in skills:
-    #         skill_name = skill['skill']['name']
-    #         skills_json.append(skill_name)
-
-    #     # Convert list to JSON
-    #     skills_json_object = json.dumps(skills_json)
-        
-    #     if os.path.exists(pdf_path):
-    #         os.remove(pdf_path)
-    #         print(f"Temporary file {pdf_path} deleted.")
-    #     inserted_id = -1
-    #     try:
-    #         with connection.cursor() as cursor:
-    #             cursor.execute("INSERT INTO application (jid, firstname, lastname, mobile, email, experience_years, skills,user_id) VALUES (%s, %s, %s, %s, %s, %s, %s,%s)",[job_id, firstname, lastname, mobile, email, experience_years, skills_json_object,user_id])
-    #             cursor.execute("SELECT LAST_INSERT_ID()")
-    #             inserted_id = cursor.fetchone()[0]
-    #             cursor.close()
-    #     except Exception as e:
-    #         print(e)
-    #         return redirect('candidate') 
-        
-    #     # code to populate scheduled_interview
-    #     schedule_interview([inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json])
-    #     # print('OK')
+        thread = threading.Thread(target=schedule_interview,args=(task_id,[inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json,user_id]))
+        thread.start()
         return redirect('candidate')
 
 def add_job(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
         return redirect('/')
-    return render(request,'Add_Jobs.html')
+    return render(request,'Add_Jobs.html')  
 
 def addJob(request):
     job_ID = request.POST['job_ID']
@@ -371,6 +294,8 @@ def addJob(request):
             print(e)
             return render(request, 'Add_Jobs.html',  {'error': str(e)}) 
     return redirect('add_job')
+
+
 def interviewer_info(request):
     if not request.session.get('user_id') or request.session.get('user_role') != 'interviewer':
         return redirect('/')
@@ -381,6 +306,8 @@ def interviewer_info(request):
         'email': request.session.get('email'),
     }
     return render(request,'interviewer_info.html',{'interviewer':interviewer})
+
+
 def update_info(request):
         if request.method == "POST":
         # Get form data
@@ -398,48 +325,10 @@ def update_info(request):
             fs = FileSystemStorage(location='/tmp')  # Store in temp directory
             filename = fs.save(resume.name, resume)
             pdf_path = fs.path(filename)
-            
             print(pdf_path)
-
-            # Process resume using Emsi API
-            url = "https://emsiservices.com/skills/versions/latest/extract"
-            auth_url = "https://auth.emsicloud.com/connect/token"
-            payload = {
-                "client_id": "39emm9hnhgnzvhfd",
-                "client_secret": "1oW72wzJ",
-                "grant_type": "client_credentials",
-                "scope": "emsi_open"
-            }
-            headers = {"Content-Type": "application/x-www-form-urlencoded"}
-            response = requests.post(auth_url, data=payload, headers=headers)
-            access_token = ''
-
-            if response.status_code == 200:
-                response_data = response.json()
-                access_token = response_data.get('access_token')
-            
-            headers = {
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json"
-            }
-
-            resume_text = extract_text_from_pdf(pdf_path).lower()
-            payload = {
-                "text": resume_text,
-                "confidenceThreshold": 0.8
-            }
-
-            response = requests.request("POST", url, json=payload, headers=headers)
-            skills = response.json().get('data', [])
-            skills_json = []
-
-            for skill in skills:
-                skill_name = skill['skill']['name']
-                skills_json.append(skill_name)
-
+            skills_json=parse_resume(pdf_path)
             # Convert list to JSON
             skills_json_object = json.dumps(skills_json)
-            
             if os.path.exists(pdf_path):
                 os.remove(pdf_path)
                 # print(f"Temporary file {pdf_path} deleted.")
@@ -525,6 +414,7 @@ def scheduled_interview_(request):
         return render(request, 'interviewer_scheduled_interview.html', {'fetched_interviews': fetched_interviews})
     else:
         return render(request, 'candidate_scheduled_interview.html', {'fetched_interviews': fetched_interviews})
+
 def get_job_details(request, job_id):
     # print(job_id)
     try:
@@ -546,123 +436,6 @@ def get_job_details(request, job_id):
         job_data={}
         print(e)
     return JsonResponse(job_data)
-
-def find_common_time_slot(availability_list, required_duration=1):
-    """
-    Find a common time slot of `required_duration` hours among all given availability schedules.
-    """
-    days_of_week = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-
-    for day in days_of_week:
-        # Extract available times for each interviewer on this day
-        times = []
-        for availability in availability_list:
-            if day in availability:
-                start = int(availability[day]['start'].split(":")[0])
-                end = int(availability[day]['end'].split(":")[0])
-                times.append((start, end))
-
-        # Check for overlapping time slots
-        if len(times) > 0:
-            # Find the maximum start time and minimum end time among all interviewers
-            max_start = max([t[0] for t in times])
-            min_end = min([t[1] for t in times])
-            
-            # Check if there is at least `required_duration` hours overlap
-            if min_end - max_start >= required_duration:
-                return day, max_start, max_start + required_duration
-
-    return None, None, None
-
-
-def schedule_interview(maal):
-     # Unpack candidate details
-    inserted_id, jid, firstname, lastname, mobile, email, experience_year, candidate_skills = maal
-    cursor = connection.cursor()
-    try:
-        # Check if the interview is already scheduled for the given application
-        cursor.execute("SELECT COUNT(*) FROM scheduled_interview WHERE cid = %s", (inserted_id,))
-        exists = cursor.fetchone()[0]
-        if exists:
-            print("Interview already scheduled for this candidate!")
-            return
-        # Fetch job details from the jobs table using jid
-        cursor.execute("SELECT job_title, descr FROM jobs WHERE job_ID = %s", (jid,))
-        job_result = cursor.fetchone()
-        job_title, descr = job_result
-        # Step 1: Fetch all interviewers from the interviewers table
-        cursor.execute("SELECT id, firstname, lastname, experience_years, skills, availability FROM interviewers")
-        interviewers = cursor.fetchall()
-        # Step 2: Filter interviewers by experience (at least twice the experience of the candidate)
-        filtered_interviewers = []
-        for interviewer in interviewers:
-            interviewer_id, interviewer_firstname, interviewer_lastname, interviewer_experience, interviewer_skills_json, interviewer_availability_json = interviewer
-            # Ensure interviewer_experience and experience_year are integers
-            interviewer_experience = int(interviewer_experience)  # Cast to integer if it is a string
-            experience_year = int(experience_year)  # Cast to integer if it is a string
-            if interviewer_experience >= 2 * experience_year:
-                interviewer_skills = json.loads(interviewer_skills_json)
-                # Calculate skill matching score using mlscore function
-                score = mlscore(candidate_skills, interviewer_skills)
-                print(score)
-                print(interviewer_firstname)
-                filtered_interviewers.append((interviewer_id, interviewer_firstname, interviewer_lastname, score, interviewer_availability_json))
-        print(filtered_interviewers)
-        # Step 3: Sort interviewers by skill matching score in descending order and pick the top 3
-        top_interviewers = sorted(filtered_interviewers, key=lambda x: x[3], reverse=True)[:min(len(filtered_interviewers),3)]
-        # Step 4: Extract availability of top interviewers
-        availability_list = [json.loads(top_interviewers[i][4]) for i in range(len(top_interviewers))]
-        # Step 5: Find a common 1-hour time slot where all 3, 2, or at least 1 is available
-        number=1
-        for num_interviewers in [3, 2, 1]:
-            num_interviewers_to_check = min(num_interviewers, len(availability_list))
-            # Get the availability data for the top interviewers to check
-            day, start_time, end_time = find_common_time_slot(availability_list[:num_interviewers_to_check])
-            if day is not None:
-                number=num_interviewers_to_check
-                break
-        print(number)
-        if day is None:
-            print("No Availability found of anyone")
-            return
-        
-        # Step 6: Calculate the date of the chosen day in the current week
-        current_date = datetime.now()
-        weekday_mapping = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
-                           "friday": 4, "saturday": 5, "sunday": 6}
-        target_weekday = weekday_mapping[day]
-        # Calculate the date for the target weekday
-        days_ahead = target_weekday - current_date.weekday()
-        if days_ahead < 0:
-            days_ahead += 7
-        interview_date = current_date + timedelta(days=days_ahead)
-        interview_date_str = interview_date.strftime('%Y-%m-%d')
-        # Prepare the time slot
-        time_slot = f"{start_time}:00 - {end_time}:00"
-
-        # Step 7: Prepare data for the scheduled_interview table
-        pmember2 = pmember3 = None
-        candidate_name = f"{firstname} {lastname}"
-        # Check if there are enough interviewers in the list
-        pmember1 = top_interviewers[0][0] if min(number,len(top_interviewers)) > 0 else None
-        pmember2 = top_interviewers[1][0] if min(number,len(top_interviewers)) > 1 else None
-        pmember3 = top_interviewers[2][0] if min(number,len(top_interviewers)) > 2 else None
-        # Prepare the panel string
-        panel = ', '.join([f"{top_interviewers[i][1]} {top_interviewers[i][2]}" for i in range(len(top_interviewers[:number]))])
-        tm = time_slot
-        dt = interview_date_str
-        
-        # Insert the scheduled interview into the scheduled_interview table
-        cursor.execute(
-            "INSERT INTO scheduled_interview (cid, jid, job_title, candidate_name, pmember1, pmember2, pmember3, panel, descr, tm, dt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-            (inserted_id, jid, job_title, candidate_name, pmember1, pmember2, pmember3, panel, descr, tm, dt)
-        )
-        print("Interview scheduled successfully!")
-
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        cursor.close()
     
 def parse_jobs():
     try:
@@ -684,6 +457,7 @@ def parse_jobs():
     except:
         jobs_f=[]
     return jobs_f
+
 def fetch_interview_details(request, cid, jid):
     print('ok')
     try:
@@ -750,7 +524,7 @@ def generate_questions(request):
         # Extract questions delimited by $
         questions = re.findall(r'\$(.*?)\$', response.text, re.DOTALL)
         questions = [q.strip() for q in questions]
-
+        print(questions)
         # Return the questions as JSON response
         return JsonResponse({"questions": questions})
 
@@ -810,17 +584,41 @@ def resume_score(request):
         job_title = request.POST.get('job_title')
         job_description = request.POST.get('job_description')
         job_requirements = request.POST.get('job_requirements')
-        fs = FileSystemStorage(location='/tmp')  # Store in temp directory
-
-
+        user_Id = request.session.get('user_id')
+        mobile =  request.session.get('mobile')
+        email = request.session.get('email')
         if not job_title or not job_description or not job_requirements:
             return JsonResponse({'error': 'Missing required fields'}, status=400)
 
+        # Define the base directory for saving files
+        base_dir = os.path.join(os.getcwd(), 'temporary')
+        os.makedirs(base_dir, exist_ok=True)  # Ensure 'temporary' folder exists
 
-        filename = fs.save(resume.name, resume)
-        pdf_path = fs.path(filename)
+        # Create a unique folder for the job_Id and user_Id
+        folder_name = f"{job_Id}_{user_Id}"
+        folder_path = os.path.join(base_dir, folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+
+        # Initialize FileSystemStorage with the target folder
+        fs = FileSystemStorage(location=folder_path)
+        # Save the resume as resume.pdf using fs.save()
+        filename = fs.save('resume.pdf', resume)
+        pdf_path = fs.path(filename)  # Get the full path of the saved file
         
         print(pdf_path)
+
+        # Save the textual data into data.txt
+        data_file_path = os.path.join(folder_path, 'data.txt')
+        with open(data_file_path, 'w') as data_file:
+            data_file.write(f"First Name: {first_name}\n")
+            data_file.write(f"Last Name: {last_name}\n")
+            data_file.write(f"Experience: {exp}\n")
+            data_file.write(f"Job Title: {job_title}\n")
+            data_file.write(f"Job Description: {job_description}\n")
+            data_file.write(f"Job Requirements: {job_requirements}\n")
+            data_file.write(f"Mobile: {mobile}\n")
+            data_file.write(f"Email: {email}\n")
+
         # Process resume using Emsi API
         url = "https://emsiservices.com/skills/versions/latest/extract"
         auth_url = "https://auth.emsicloud.com/connect/token"
@@ -857,13 +655,7 @@ def resume_score(request):
         for skill in skills:
             skill_name = skill['skill']['name']
             skills_json.append(skill_name)
-                
-
-        
-        if os.path.exists(pdf_path):
-            os.remove(pdf_path)
-            print(f"Temporary file {pdf_path} deleted.")
-
+        print(skills_json)
         # Convert the skill list to a comma-separated string
         skills_string = ', '.join(skills_json)
 

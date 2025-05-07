@@ -1,0 +1,8 @@
+First Name: Atharva
+Last Name: Singh
+Experience: 1
+Job Title: SDE
+Job Description: As an SDE-1, you will be a key contributor to our software development team, working on the design, development, and deployment of scalable, high-performance applications. This is an excellent opportunity for recent graduates or early-career professionals to grow and make a significant impact in a fast-paced, dynamic environment.
+Job Requirements: Proficiency in at least one programming language (e.g., Java, Python, C++).,Basic knowledge of database systems and SQL.
+Mobile: 1234567890
+Email: athsingh@gmail.com
