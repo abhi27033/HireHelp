@@ -7,7 +7,7 @@
 {% block content %}
 <!-- Notification Bar -->
 <div class="bg-gray-100 flex items-center justify-center min-h-screen mt-16">
-    <!-- {% if error %}
+    {% if error %}
         <div id="error-notification" class="fixed top-20 left-10">
             <div class="relative flex items-center bg-white shadow-lg rounded-md py-3 px-6 max-w-md mx-auto">
                 <div class="flex flex-row items-center space-x-2">
@@ -26,7 +26,7 @@
                 </div>
             </div>
         </div>
-{% endif %} -->
+{% endif %}
     <div class="glass-overlay p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 class="text-2xl font-bold mb-4 text-center text-black">Post a Job</h2>
         <form id="jobForm" class="space-y-4 inp" action="addJob" method="POST">
@@ -112,20 +112,20 @@
             });
         }
     });
-    // window.onload = function() {
-    //     const notification = document.getElementById('error-notification');
-    //     const closeButton = document.getElementById('closeNotification');
+    window.onload = function() {
+        const notification = document.getElementById('error-notification');
+        const closeButton = document.getElementById('closeNotification');
 
-    //     closeButton.addEventListener('click', ()=>{
-    //         notification.style.display = 'none';
-    //     });
+        closeButton.addEventListener('click', ()=>{
+            notification.style.display = 'none';
+        });
 
-    //     if (notification) {
-    //         setTimeout(()=>{
-    //             notification.style.display = 'none';
-    //         }, 6000);
-    //     } 
-    // };
+        if (notification) {
+            setTimeout(()=>{
+                notification.style.display = 'none';
+            }, 6000);
+        } 
+    };
 
 </script>
 

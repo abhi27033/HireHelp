@@ -18,7 +18,7 @@ import re
 from django.http import JsonResponse
 from django.conf import settings
 from .interview_scheduler import schedule_interview
-
+import stat
 API_KEY=settings.API_KEY
 
 def index(request):
@@ -117,21 +117,6 @@ def candidate(request):
             jobs_f.append(jobs_dict)
     except:
         jobs_f=[]
-    # try:
-    #     noti=[]
-    #     with connection.cursor() as cursor:
-    #         cursor.execute("SELECT id,message,created_at from notifications where user_id=%s AND is_read=FALSE",[user_id])
-    #         noti_fetched = list(cursor.fetchall())
-    #     for i in noti_fetched:
-    #         noti_dict={
-    #             'Notification_ID':i[0],
-    #             'Message':i[1],
-    #             'Date':i[2]
-    #         }
-    #         noti.append(noti_dict)
-    #     print("Notifications ",noti)
-    # except:
-    #     noti = []
     return render(request, 'candidate.html', {'candidate': candidate,'fetched_jobs':jobs_f})
 
 def interviewer(request):
@@ -198,22 +183,6 @@ def interviewer(request):
     except Exception as e:
         jobs_f=[]
         # print(e)
-    # try:
-    #     noti=[]
-    #     with connection.cursor() as cursor:
-    #         cursor.execute("SELECT id,message,created_at from notifications where user_id=%s AND is_read=FALSE",[user_id])
-    #         noti_fetched = list(cursor.fetchall())
-    #     for i in noti_fetched:
-    #         noti_dict={
-    #             'Notification_ID':i[0],
-    #             'Message':i[1],
-    #             'Date':i[2]
-    #         }
-    #         noti.append(noti_dict)
-    #     print("Notifications ",noti)
-    # except:
-    #     print("Notifications ",noti)
-    #     noti = []
     return render(request, 'interviewer.html',{'fetched_jobs':jobs_f})
 
 def logout_view(request):
@@ -244,10 +213,14 @@ def submit_application(request):
         skills_json=parse_resume(pdf_path)
         # Convert list to JSON
         skills_json_object = json.dumps(skills_json)
+        print(folder_path)
+        def remove_readonly(func, path, _):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
 
-        # if os.path.exists(folder_path):
-        #     shutil.rmtree(folder_path)
-        #     print(f"Temporary folder {folder_path} deleted.")
+        if os.path.exists(folder_path):
+            shutil.rmtree(folder_path, onerror=remove_readonly)
+            print(f"Temporary folder {folder_path} deleted.")
         inserted_id = -1
         try:
             with connection.cursor() as cursor:
@@ -443,7 +416,6 @@ def parse_jobs():
             cursor.execute("SELECT * FROM jobs")
             jobs = list(cursor.fetchall())
         jobs_f=[]
-        # print(type(jobs[0]))
         for job in jobs:
             jobs_dict = {
                 'Job_ID': job[0],
@@ -452,7 +424,6 @@ def parse_jobs():
                 'Job_Description': job[3],
                 'Job_Requirements': job[4][1:][:-1].split(',')
             }
-            # print(jobs_dict['Job_Requirements'])
             jobs_f.append(jobs_dict)
     except:
         jobs_f=[]
@@ -545,8 +516,6 @@ def evaluate_answers(request):
         # Parse JSON data
         questions = json.loads(questions)
         answers = json.loads(answers)
-         
-        print(questions)
         # Prepare the prompt for evaluation
         prompt = (
             f"Evaluate the following candidate answers for the given questions:\n\n"
@@ -655,7 +624,6 @@ def resume_score(request):
         for skill in skills:
             skill_name = skill['skill']['name']
             skills_json.append(skill_name)
-        print(skills_json)
         # Convert the skill list to a comma-separated string
         skills_string = ', '.join(skills_json)
 
@@ -672,7 +640,6 @@ def resume_score(request):
 
         Write the score as follows: "Score: <value>".
         """
-
         # Call the Gemini API
         response = model.generate_content(prompt)
 

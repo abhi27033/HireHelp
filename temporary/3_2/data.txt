@@ -1,8 +1,0 @@
-First Name: Atharva
-Last Name: Singh
-Experience: 1
-Job Title: SDE-2
-Job Description: As an SDE-2, you will take on more ownership and responsibility for designing, developing, and optimizing scalable and reliable software systems. You will mentor junior developers and contribute to the architectural decisions that shape our products. This role is ideal for engineers with 2–4 years of professional experience looking to advance their careers and make a significant impact.
-Job Requirements: Design, implement, and maintain scalable, high-performance software systems.,Write clean, efficient, and well-documented code.,Identify and resolve performance bottlenecks, optimize system performance, and troubleshoot production issues.
-Mobile: 1234567890
-Email: athsingh@gmail.com
