@@ -18,7 +18,7 @@ import re
 from django.http import JsonResponse
 from django.conf import settings
 from .interview_scheduler import schedule_interview
-
+import stat
 API_KEY=settings.API_KEY
 
 def index(request):
@@ -96,6 +96,7 @@ def candidate(request):
         'mobile': request.session.get('mobile'),
         'email': request.session.get('email'),
     }
+    user_id = request.session.get('user_id')
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT job_ID,job_title,location,company_name,pay,date_of_posting,status FROM jobs where status=true order by date_of_posting desc")
@@ -212,9 +213,13 @@ def submit_application(request):
         skills_json=parse_resume(pdf_path)
         # Convert list to JSON
         skills_json_object = json.dumps(skills_json)
+        print(folder_path)
+        def remove_readonly(func, path, _):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
 
         if os.path.exists(folder_path):
-            shutil.rmtree(folder_path)
+            shutil.rmtree(folder_path, onerror=remove_readonly)
             print(f"Temporary folder {folder_path} deleted.")
         inserted_id = -1
         try:
@@ -228,7 +233,7 @@ def submit_application(request):
             return redirect('candidate') 
         task_id = datetime.now().strftime("%Y%m%d%H%M%S")
         # code to populate scheduled_interview
-        thread = threading.Thread(target=schedule_interview,args=(task_id,[inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json]))
+        thread = threading.Thread(target=schedule_interview,args=(task_id,[inserted_id, job_id, firstname, lastname, mobile, email, experience_years, skills_json,user_id]))
         thread.start()
         return redirect('candidate')
 
@@ -411,7 +416,6 @@ def parse_jobs():
             cursor.execute("SELECT * FROM jobs")
             jobs = list(cursor.fetchall())
         jobs_f=[]
-        # print(type(jobs[0]))
         for job in jobs:
             jobs_dict = {
                 'Job_ID': job[0],
@@ -420,7 +424,6 @@ def parse_jobs():
                 'Job_Description': job[3],
                 'Job_Requirements': job[4][1:][:-1].split(',')
             }
-            # print(jobs_dict['Job_Requirements'])
             jobs_f.append(jobs_dict)
     except:
         jobs_f=[]
@@ -492,7 +495,6 @@ def generate_questions(request):
         # Extract questions delimited by $
         questions = re.findall(r'\$(.*?)\$', response.text, re.DOTALL)
         questions = [q.strip() for q in questions]
-
         # Return the questions as JSON response
         return JsonResponse({"questions": questions})
 
@@ -513,8 +515,6 @@ def evaluate_answers(request):
         # Parse JSON data
         questions = json.loads(questions)
         answers = json.loads(answers)
-         
-        print(questions)
         # Prepare the prompt for evaluation
         prompt = (
             f"Evaluate the following candidate answers for the given questions:\n\n"
@@ -623,7 +623,6 @@ def resume_score(request):
         for skill in skills:
             skill_name = skill['skill']['name']
             skills_json.append(skill_name)
-
         # Convert the skill list to a comma-separated string
         skills_string = ', '.join(skills_json)
 
@@ -640,7 +639,6 @@ def resume_score(request):
 
         Write the score as follows: "Score: <value>".
         """
-
         # Call the Gemini API
         response = model.generate_content(prompt)
 

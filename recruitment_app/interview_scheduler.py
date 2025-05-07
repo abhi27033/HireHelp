@@ -33,7 +33,7 @@ def find_common_time_slot(availability_list, required_duration=1):
 def schedule_interview(task_id,maal):
     print(f"Task {task_id} started.")
      # Unpack candidate details
-    inserted_id, jid, firstname, lastname, mobile, email, experience_year, candidate_skills = maal
+    inserted_id, jid, firstname, lastname, mobile, email, experience_year, candidate_skills,user_id = maal
     cursor = connection.cursor()
     try:
         # Check if the interview is already scheduled for the given application
@@ -114,6 +114,8 @@ def schedule_interview(task_id,maal):
             "INSERT INTO scheduled_interview (cid, jid, job_title, candidate_name, pmember1, pmember2, pmember3, panel, descr, tm, dt) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
             (inserted_id, jid, job_title, candidate_name, pmember1, pmember2, pmember3, panel, descr, tm, dt)
         )
+        message = "Interview scheduled for Job ID: {} On {} Slot {}".format(jid,dt,tm)
+        cursor.execute("INSERT INTO notifications (user_id,message) values (%s,%s)",(user_id,message))
         print("Interview scheduled successfully!")
         print(f"Task {task_id} completed.")
     except Exception as e:

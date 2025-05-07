@@ -263,8 +263,7 @@ function displayResult(score1,score2,jobId){
         gaugeChart.update(); 
         drawNeedle(value); 
         }
-    
-    
+
         let currentValue = -1;
         const targetValue = score[i];
         // console.log(score[i]); 
@@ -294,20 +293,21 @@ function displayResult(score1,score2,jobId){
     
     if(score1>=50 && score2>=50){
         document.getElementById('result').innerHTML=`
-            <p class="text-gray-700 mt-2 pb-2"> Congratulations! You Can Apply for this job.</p>
-            <form action='${submitApplicationUrl}' method='POST'>
-            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <h2 class="text-2xl font-semibold text-gray-900">Congratulations! You Can Apply for this job.</h2>
+            <form action='${submitApplicationUrl}' method='POST' style="display: inline;">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
             <input type="hidden" name="jobId" value="${jobId}">
-            <button type='submit'> Apply </button>
+                <button type="submit" class="mt-4 back-purp text-white px-4 py-2 rounded" style="display: inline-block; margin-right: 10px;">Apply</button>
             </form>
-            <button onclick="window.location.href='candidate'">Go Back</button>
+            <button onclick="window.location.href='candidate'" class="mt-4 back-purp text-white px-4 py-2 rounded" style="display: inline-block;">Go Back</button>
+
         `;
 
     }else{
         document.getElementById('result').innerHTML=`
-            <p class="text-gray-700 mt-2 pb-2"> Sorry! You are not eligible to apply on this job.
-            But Don't worry you can try applying to any other job.</p>
-            <button onclick="window.location.href='candidate'">Go Back</button>
+            <h2 class="text-2xl font-semibold text-gray-900"> Sorry! You are not eligible to apply on this job.
+            But Don't worry you can try applying to any other job.</h2>
+            <button onclick="window.location.href='candidate'" class="mt-4 back-purp text-white px-4 py-2 rounded">Go Back</button>
         `;
     }
 }
