@@ -21,6 +21,10 @@ from .interview_scheduler import schedule_interview
 import stat
 API_KEY=settings.API_KEY
 
+# Configure Google GenAI
+genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
+
 def index(request):
     # Clear the session data
     request.session.flush()
@@ -129,45 +133,6 @@ def interviewer(request):
             jobs = list(cursor.fetchall())
         jobs_f=[]
         for job in jobs:
-            # jobs_dict = {
-            #     'Job_ID': job[0],
-            #     'Job_Title': job[1],
-            #     'Job_Location': job[2],
-            #     'Job_Description': job[3],
-            #     'Job_Requirements': job[4][1:][:-1].split(','),
-            #     'Job_Status': job[6],
-            #     'Company_Name':job[7],
-                
-            # }
-            # # Knowledge Graph API endpoint
-            # service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
-
-            # # Parameters for the API request
-            # params = {
-            #     'query': job[2],
-            #     'limit': 1,
-            #     'indent': True,
-            #     'key': 'Your API Key',
-            #     'types':'Organization'
-            # }
-
-            # # Create the full URL for the API request
-            # url = service_url + '?' + urllib.parse.urlencode(params)
-
-            # # Make the API call and load the response
-            # response = json.loads(urllib.request.urlopen(url).read())
-
-            # # Iterate through the results
-            # if response.get('itemListElement'):
-            #     entity = response['itemListElement'][0]['result']
-            #     entity_name = entity['name']
-            #     entity_score = response['itemListElement'][0]['resultScore']
-                
-            #     # Check if the entity has a logo property
-            #     logo_url = None
-            #     if 'image' in entity and 'contentUrl' in entity['image']:
-            #         logo_url = entity['image']['contentUrl']
-            #     print("LOGO:", logo_url)
             jobs_dict = {
                 'Job_ID':job[0],
                 'Job_Title':job[1],
@@ -214,13 +179,10 @@ def submit_application(request):
         # Convert list to JSON
         skills_json_object = json.dumps(skills_json)
         print(folder_path)
-        def remove_readonly(func, path, _):
-            os.chmod(path, stat.S_IWRITE)
-            func(path)
-
         if os.path.exists(folder_path):
-            shutil.rmtree(folder_path, onerror=remove_readonly)
+            shutil.rmtree(folder_path)
             print(f"Temporary folder {folder_path} deleted.")
+        
         inserted_id = -1
         try:
             with connection.cursor() as cursor:
@@ -469,10 +431,6 @@ def fetch_interview_details(request, cid, jid):
     return JsonResponse(interview_data)
 
 
-# Configure Google GenAI
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
-
 def generate_questions(request):
     # Only handle POST requests
     if request.method == 'POST':
@@ -587,42 +545,8 @@ def resume_score(request):
             data_file.write(f"Mobile: {mobile}\n")
             data_file.write(f"Email: {email}\n")
 
-        # Process resume using Emsi API
-        url = "https://emsiservices.com/skills/versions/latest/extract"
-        auth_url = "https://auth.emsicloud.com/connect/token"
-        payload = {
-            "client_id": "39emm9hnhgnzvhfd",
-            "client_secret": "1oW72wzJ",
-            "grant_type": "client_credentials",
-            "scope": "emsi_open"
-        }
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(auth_url, data=payload, headers=headers)
-        access_token = ''
+        skills_json = parse_resume(pdf_path)
 
-        if response.status_code == 200:
-            response_data = response.json()
-            access_token = response_data.get('access_token')
-        
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
-        }
-
-        resume_text = extract_text_from_pdf(pdf_path).lower()
-        payload = {
-            "text": resume_text,
-            "confidenceThreshold": 0.8
-        }
-
-        response = requests.request("POST", url, json=payload, headers=headers)
-        skills = response.json().get('data', [])
-        skills_json = []
-
-
-        for skill in skills:
-            skill_name = skill['skill']['name']
-            skills_json.append(skill_name)
         # Convert the skill list to a comma-separated string
         skills_string = ', '.join(skills_json)
 
