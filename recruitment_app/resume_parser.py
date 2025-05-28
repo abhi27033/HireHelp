@@ -12,8 +12,8 @@ def parse_resume(pdf_path):
     url = "https://emsiservices.com/skills/versions/latest/extract"
     auth_url = "https://auth.emsicloud.com/connect/token"
     payload = {
-        "client_id": "hlslf2pxdiyjncuo",
-        "client_secret": "R8iK5f97",
+        "client_id": "8wo0elkb37jsm9rx",
+        "client_secret": "FcIBUQ5W",
         "grant_type": "client_credentials",
         "scope": "emsi_open"
     }
